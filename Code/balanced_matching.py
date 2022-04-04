@@ -177,14 +177,29 @@ def averageRankPartners(n_men, n_women, men_spouse, women_spouse, men_preference
     return men_average_rank, women_average_rank
 
 
-men_preferences, women_preferences = simulationMarriageMarket(1000, 1001, 150, 1000)
+def simulationMCMatching(n_men, n_women, men_pref_sizes, women_pref_size, iter):
 
-men_spouse, women_spouse  = galeShapley(1000, 1001, men_preferences, women_preferences)
+    rank_size_men = {}
+    rank_size_women = {}
 
-men_average_rank, women_average_rank = averageRankPartners(1000, 1001, men_spouse, women_spouse, men_preferences, women_preferences)
+    for pref_size in men_pref_sizes:
+        print('simulating size of preferences: ' + str(pref_size))
+        men_average_ranks = []
+        women_average_ranks = []
+        for i in range(iter):
+            men_pref, women_pref = simulationMarriageMarket(n_men, n_women, pref_size, women_pref_size)
+            men_sp, women_sp = galeShapley(n_men, n_women, men_pref, women_pref)
+            men_average_r, women_average_r = averageRankPartners(n_men, n_women, men_sp, women_sp, men_pref, women_pref)
+            men_average_ranks.append(men_average_r)
+            women_average_ranks.append(women_average_r)
+        rank_size_men[pref_size] = sum(men_average_ranks)/iter
+        rank_size_women[pref_size] = sum(women_average_ranks)/iter
+    return rank_size_men, rank_size_women
 
-print(men_average_rank)
+rank_size_men, rank_size_women = simulationMCMatching(1000, 1001, [5, 50, 100, 150], 1000, 5)
 
-print(women_average_rank)
+print(rank_size_men)
+
+print(rank_size_women)
 
 print('code succesfull')
