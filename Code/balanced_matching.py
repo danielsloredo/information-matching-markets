@@ -34,18 +34,35 @@ def simulationMarriageMarket(n_men, n_women, d_men, d_women):
             men_preferences[man] = np.random.choice(women, d_men, replace=False).tolist()
 
     for woman in women:
-        if n_men < d_women:
-            women_preferences[woman] = np.random.choice(men, n_men, replace=False).tolist()
+        possible_partners = []
+        for man, prefs in men_preferences.items():
+            if woman in prefs:
+                possible_partners.append(man)
+        number_poss_partners = len(possible_partners)
+        if number_poss_partners > 0:
+            if number_poss_partners < d_women:
+                women_preferences[woman] = np.random.choice(possible_partners, number_poss_partners, replace=False).tolist()
+            else:
+                women_preferences[woman] = np.random.choice(possible_partners, d_women, replace=False).tolist()
         else:
-            women_preferences[woman] = np.random.choice(men, d_women, replace=False).tolist()
+            women_preferences[woman] = None
     
     return men_preferences, women_preferences
 
 def galeShapley(n_men, n_women, men_preferences, women_preferences):
-    
+    '''
+    Function that computes the stable match of a market using the DA algorithm by Gale and Shapley.
+    INPUTS:
+        n_men: number of men in the market
+        n_women: number of women in the market
+        men_preferences: dictionary with preference lists for men
+        women_preferences: dictionary with preference lists for women
+    OUTPUT:
+        man_spouse: list with men stable partner 
+        woman_spouse: list with women stable partner
+    '''
     # Initially, all n men are unmarried
     unmarried_men = list(range(n_men))
-    print(unmarried_men)
     # None of the men has a spouse yet, we denote this by the value None
     man_spouse = [None] * n_men                      
     # None of the women has a spouse yet, we denote this by the value None
@@ -53,21 +70,26 @@ def galeShapley(n_men, n_women, men_preferences, women_preferences):
     # Each man made 0 proposals, which means that 
     # his next proposal will be to the woman number 0 in his list
     next_man_choice = [0] * n_men
-    
     # The size of the preference lists of the proposing side
-    size_preferences = len(men_preferences[0])
-                           
+    size_preferences = len(men_preferences[0])                       
     #This is the total number of possible proposals before all men go through their full preference lists
     total_posible_proposals = size_preferences * n_men
-
     # While there exists at least one unmarried man or there are men with possible proposals still available:
-    while unmarried_men and (sum(next_man_choice)<= total_posible_proposals):
+    while unmarried_men and (sum(next_man_choice) <= total_posible_proposals):
         # Pick an arbitrary unmarried man
         he = unmarried_men[0]
+        to_break = 0
 
         while next_man_choice[he]>=size_preferences:
-            unmarried_men.pop(0)
-            he = unmarried_men[0]                     
+            if len(unmarried_men)>1:
+                unmarried_men.pop(0)
+                he = unmarried_men[0]
+            else:
+                to_break = 1
+
+        if to_break == 1:
+            break
+
         # Store his ranking in this variable for convenience
         his_preferences = men_preferences[he]       
         # Find a woman to propose to
@@ -76,7 +98,7 @@ def galeShapley(n_men, n_women, men_preferences, women_preferences):
         her_preferences = women_preferences[she]
         # Find the present husband of the selected woman (it might be None)
         current_husband = woman_spouse[she]
-        
+ 
         # Now "he" proposes to "she". 
         # Decide whether "she" accepts, and update the following fields
         # 1. manSpouse
@@ -118,17 +140,51 @@ def galeShapley(n_men, n_women, men_preferences, women_preferences):
 
     return man_spouse, woman_spouse
 
-men_prefereces, women_preferences = simulationMarriageMarket(4, 10, 5, 10)
+def averageRankPartners(n_men, n_women, men_spouse, women_spouse, men_preferences, women_preferences):
+    '''
+    Function that computes the average rank of partners in the stable match
+    INPUT:
+        n_men: number of men in the market
+        n_women: number of women in the market
+        men_spouse: list with stable partners for men
+        women_spouse: list with stable partners for women
+        men_preferences: dictionary with the list of preferences for each one of the men
+        women_preferences: dictionary with the list of preferences for each one of the women
+    Output: 
+        men_average_rank: average rank of partners for men in the stable match
+        women_average_rank: average rank of partners for women in the stable match
+    '''
+    men_ranks = {}
+    women_ranks = {}
+    men_rank_unmatched = len(men_preferences[0]) + 1
+    women_rank_unmatched = len(women_preferences[0]) + 1
 
-print(men_prefereces)
+    for man, prefs in men_preferences.items():
+        if men_spouse[man] == None:
+            men_ranks[man] = men_rank_unmatched
+        else:
+            men_ranks[man] = prefs.index(men_spouse[man]) + 1
+    
+    for woman, prefs in women_preferences.items():
+        if women_spouse[woman] == None:
+            women_ranks[woman] = women_rank_unmatched
+        else:
+            women_ranks[woman] = prefs.index(women_spouse[woman]) + 1
 
-print(women_preferences)
+    men_average_rank = sum(men_ranks.values())/n_men
+    women_average_rank = sum(women_ranks.values())/n_women
 
-men_spouse, women_spouse  = galeShapley(4, 10, men_prefereces, women_preferences)
- 
+    return men_average_rank, women_average_rank
 
-print(men_spouse)
 
-print(women_spouse)
+men_preferences, women_preferences = simulationMarriageMarket(1000, 1001, 50, 1000)
+
+men_spouse, women_spouse  = galeShapley(1000, 1001, men_preferences, women_preferences)
+
+men_average_rank, women_average_rank = averageRankPartners(1000, 1001, men_spouse, women_spouse, men_preferences, women_preferences)
+
+print(men_average_rank)
+
+print(women_average_rank)
 
 print('code succesfull')
