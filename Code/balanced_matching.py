@@ -80,7 +80,7 @@ def galeShapley(n_men, n_women, men_preferences, women_preferences):
         he = unmarried_men[0]
         to_break = 0
 
-        while next_man_choice[he]>=size_preferences:
+        while next_man_choice[he]>=size_preferences and to_break==0:
             if len(unmarried_men)>1:
                 unmarried_men.pop(0)
                 he = unmarried_men[0]
@@ -177,7 +177,7 @@ def averageRankPartners(n_men, n_women, men_spouse, women_spouse, men_preference
     return men_average_rank, women_average_rank
 
 
-men_preferences, women_preferences = simulationMarriageMarket(1000, 1001, 50, 1000)
+men_preferences, women_preferences = simulationMarriageMarket(1000, 1001, 150, 1000)
 
 men_spouse, women_spouse  = galeShapley(1000, 1001, men_preferences, women_preferences)
 
