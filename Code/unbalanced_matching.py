@@ -192,3 +192,26 @@ def simulationMCMatching(n_men, n_women, men_pref_sizes, women_pref_size, iter):
         rank_size_men[pref_size] = sum(men_average_ranks)/iter
         rank_size_women[pref_size] = sum(women_average_ranks)/iter
     return rank_size_men, rank_size_women
+
+
+def counselorIncreasePreferences(n_students, n_preference_additions, students_pref, school_pref, counselor_confidence):
+    schools = school_pref.keys()
+    ## Chose students that will hire a counselor
+    candidates = np.random.choice(students_pref.keys(), n_students, replace = False).tolist()
+    #Add the specified amount of schools to the preference list of the student
+    schools_to_add = {}
+    pos_school_pref = round(10*(1-counselor_confidence))
+    for candidate in candidates:
+        current_schools = students_pref[candidate]
+        potential_additions = list(set(schools).difference(current_schools))
+        schools_to_add[candidate] = np.random.choice(potential_additions, n_preference_additions, replace=False)
+        students_pref[candidate].append(schools_to_add[candidate])
+    #Add the student to the preference lists of the schools with a possition with respect to the counselor confidence of placement.
+        for school in schools_to_add[candidate]:
+            if len(school_pref[school])>pos_school_pref:
+                school_pref[school].insert(pos_school_pref, candidate)
+            else:
+                school_pref[school].append(candidate)
+    
+    return students_pref, school_pref
+
