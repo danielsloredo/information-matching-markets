@@ -1,7 +1,9 @@
 import unbalanced_matching as um
 import matplotlib.pyplot as plt
 
-rank_size_men, rank_size_women = um.simulationMCMatching(1000, 1001, [5, 50, 100, 150], 1000, 5)
+men_pref_sizes = list(range(5,151))
+
+rank_size_men, rank_size_women = um.simulationMCMatching(1000, 1001, men_pref_sizes, 1000, 500)
 
 print(rank_size_men)
 print(rank_size_women)
@@ -15,6 +17,6 @@ plt.plot(x2, y2, label='Rank_Schools')
 plt.xlabel("Average rank")
 plt.ylabel("Average degree d")
 plt.legend(loc="upper left")
-plt.show()
+plt.savefig('D:\Documents\CDO\CDO_project\rank_diff_pref_sizes.png')
 
 print('code succesfull')
