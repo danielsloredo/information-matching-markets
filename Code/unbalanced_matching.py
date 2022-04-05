@@ -195,9 +195,9 @@ def simulationMCMatching(n_men, n_women, men_pref_sizes, women_pref_size, iter):
 
 
 def counselorIncreasePreferences(n_students, n_preference_additions, students_pref, school_pref, counselor_confidence):
-    schools = school_pref.keys()
+    schools = list(school_pref.keys())
     ## Chose students that will hire a counselor
-    candidates = np.random.choice(students_pref.keys(), n_students, replace = False).tolist()
+    candidates = np.random.choice(list(students_pref.keys()), n_students, replace = False).tolist()
     #Add the specified amount of schools to the preference list of the student
     schools_to_add = {}
     pos_school_pref = round(10*(1-counselor_confidence))
@@ -213,5 +213,38 @@ def counselorIncreasePreferences(n_students, n_preference_additions, students_pr
             else:
                 school_pref[school].append(candidate)
     
-    return students_pref, school_pref
+    return students_pref, school_pref, candidates
 
+
+def simulationPreferenceAdditions(n_students, n_schools, student_pref_sizes, school_pref_size, students_to_modify, schools_to_add, counselor_confidence, iter):
+
+    rank_size_student = {}
+    rank_size_school = {}
+    rank_size_student_2 = {}
+    rank_size_school_2 = {}
+
+    for pref_size in student_pref_sizes:
+        print('simulating size of preferences: ' + str(pref_size))
+        student_average_ranks = []
+        school_average_ranks = []
+        student_average_ranks_2 = []
+        school_average_ranks_2 = []
+        for i in range(iter):
+            student_pref, school_pref = simulationMarriageMarket(n_students, n_schools, pref_size, school_pref_size)
+            student_sp, school_sp = galeShapley(n_students, n_schools, student_pref, school_pref)
+            student_pref_2, school_pref_2, candidates = counselorIncreasePreferences(students_to_modify, schools_to_add, student_pref, school_pref, counselor_confidence)
+            student_sp_2, school_sp_2 = galeShapley(n_students, n_schools, student_pref_2, school_pref_2)
+            student_average_r, school_average_r = averageRankPartners(n_students, n_schools, student_sp, school_sp, student_pref, school_pref)
+            student_average_ranks.append(student_average_r)
+            school_average_ranks.append(school_average_r)
+            student_average_r2, school_average_r2 = averageRankPartners(n_students, n_schools, student_sp_2, school_sp_2, student_pref_2, school_pref_2)
+            student_average_ranks_2.append(student_average_r2)
+            school_average_ranks_2.append(school_average_r2)
+
+        rank_size_student[pref_size] = sum(student_average_ranks)/iter
+        rank_size_school[pref_size] = sum(school_average_ranks)/iter
+
+        rank_size_student_2[pref_size] = sum(student_average_ranks_2)/iter
+        rank_size_school_2[pref_size] = sum(school_average_ranks_2)/iter
+
+    return rank_size_student, rank_size_school, rank_size_student_2, rank_size_school_2
