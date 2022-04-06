@@ -1,6 +1,6 @@
+from unittest import skip
 import numpy as np
 import random as ra
-import matplotlib.pyplot as plt
 
 
 def simulationMarriageMarket(n_men, n_women, d_men, d_women):
@@ -154,7 +154,6 @@ def averageRankPartners(n_men, n_women, men_spouse, women_spouse, men_preference
     men_ranks = {}
     women_ranks = {}
     men_rank_unmatched = len(men_preferences[0]) + 1
-    women_rank_unmatched = len(women_preferences[0]) + 1
 
     for man, prefs in men_preferences.items():
         if men_spouse[man] == None:
@@ -164,7 +163,11 @@ def averageRankPartners(n_men, n_women, men_spouse, women_spouse, men_preference
     
     for woman, prefs in women_preferences.items():
         if women_spouse[woman] == None:
-            women_ranks[woman] = women_rank_unmatched
+            if women_preferences[woman] != None:
+                women_rank_unmatched = len(women_preferences[woman]) + 1
+                women_ranks[woman] = women_rank_unmatched
+            else:
+                skip
         else:
             women_ranks[woman] = prefs.index(women_spouse[woman]) + 1
 
@@ -175,6 +178,18 @@ def averageRankPartners(n_men, n_women, men_spouse, women_spouse, men_preference
 
 
 def simulationMCMatching(n_men, n_women, men_pref_sizes, women_pref_size, iter):
+    '''
+    Function to simulate the average ranks of partners for both sides of a matching market 
+    INPUT:
+        n_men: number of men in the market
+        n_women: number of women in the market
+        men_pref_sizes: list with sizes for the preference list of men
+        women_pref_size: size of the preference list for women
+        iter: number of iterations in the simulation
+    Output: 
+        rank_size_men: dictionary of average rank for men with respect to each one of the men_pref_sizes
+        rank_size_women: dictionary of average rank for women with respect to each one of the men_pref_sizes
+    '''
 
     rank_size_men = {}
     rank_size_women = {}
@@ -192,3 +207,5 @@ def simulationMCMatching(n_men, n_women, men_pref_sizes, women_pref_size, iter):
         rank_size_men[pref_size] = sum(men_average_ranks)/iter
         rank_size_women[pref_size] = sum(women_average_ranks)/iter
     return rank_size_men, rank_size_women
+
+
