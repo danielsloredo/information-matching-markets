@@ -5,10 +5,17 @@ import random as ra
 
 def counselorIncreasePreferences(n_students, n_preference_additions, students_pref, school_pref, counselor_confidence):
     '''
-
+    Function to modify the list of preferences of students and schools.
     INPUT:
-
+        n_students: number of students to modify
+        n_preference_additions: number of schools to add in the preferences lists of the n_students
+        students_pref: dictionary with the students' preference lists
+        school_pref: dictionary with the schools' preference lists 
+        counselor_confidence: between (0,1], determines the position in wich a student is added to the preference list of a school
     Output: 
+        students_pref: dictionary with the new preference lists for students
+        school_pref: dictionarh with the new preference lists for schools
+        candidates: lists of modified students
     '''
     
     schools = list(school_pref.keys())
@@ -125,11 +132,18 @@ def galeShapleyModified(n_men, n_women, men_preferences, women_preferences):
 
 def averageRankPartnersModified(student_spouse, school_spouse, student_preferences, school_preferences, modified_candidates):
     '''
-
+    Function that computes the average rank of partners in the stable match
     INPUT:
-
+        student_spouse: list with stable partners for students
+        school_spouse: list with stable partners for schools
+        student_preferences: dictionary with the list of preferences for each one of the students
+        school_preferences: dictionary with the list of preferences for each one of the schools
+        modified_candidates: list with students that received advice from a counselor
     Output: 
-    '''
+        school_average_rank: average rank of partners for schools in the stable match
+        candidates_average_rank: average rank of partners for modified students in the stable match
+        noncandidates_average_rank: average rank of partners for non-modified students in the stable match
+    '''    
     student_ranks = {}
     school_ranks = {}
 
@@ -162,10 +176,20 @@ def averageRankPartnersModified(student_spouse, school_spouse, student_preferenc
 
 def simulationPreferenceAdditions(n_students, n_schools, student_pref_sizes, school_pref_size, students_to_modify, schools_to_add, counselor_confidence, iter):
     '''
-
+    Function to simulate the average ranks of partners for both sides of a matching market 
+    with heterogeneous sizes on preferences lists for some of the agents
     INPUT:
-
+        n_students: number of students in the market
+        n_schools: number of schools in the market
+        student_pref_sizes: list with sizes for the preference list of students
+        school_pref_size: size of the preference list for schools
+        students_to_modify: number of students to modify in the market
+        schools_to_add: number of schools to add to the preference lists of the modified students
+        iter: number of iterations in the simulation
     Output: 
+        school_rank: average rank of partners for schools in the stable match
+        candidates_rank: average rank of partners for modified students in the stable match
+        noncandidates_rank: average rank of partners for non-modified students in the stable match
     '''
 
     rank_candidates = {}

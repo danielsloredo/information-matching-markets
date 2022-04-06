@@ -179,10 +179,16 @@ def averageRankPartners(n_men, n_women, men_spouse, women_spouse, men_preference
 
 def simulationMCMatching(n_men, n_women, men_pref_sizes, women_pref_size, iter):
     '''
-
+    Function to simulate the average ranks of partners for both sides of a matching market 
     INPUT:
-
+        n_men: number of men in the market
+        n_women: number of women in the market
+        men_pref_sizes: list with sizes for the preference list of men
+        women_pref_size: size of the preference list for women
+        iter: number of iterations in the simulation
     Output: 
+        rank_size_men: dictionary of average rank for men with respect to each one of the men_pref_sizes
+        rank_size_women: dictionary of average rank for women with respect to each one of the men_pref_sizes
     '''
 
     rank_size_men = {}
