@@ -1,7 +1,7 @@
 from unittest import skip
 import numpy as np
 import random as ra
-
+import unbalanced_matching as um
 
 def counselorIncreasePreferences(n_students, n_preference_additions, students_pref, school_pref, counselor_confidence):
     '''
@@ -206,7 +206,7 @@ def simulationPreferenceAdditions(n_students, n_schools, student_pref_sizes, sch
             if i % 10 == 0:
                 print('working on iteration: ' + str(i))
 
-            student_pref, school_pref = simulationMarriageMarket(n_students, n_schools, student_pref_sizes, school_pref_size)
+            student_pref, school_pref = um.simulationMarriageMarket(n_students, n_schools, student_pref_sizes, school_pref_size)
             student_pref_2, school_pref_2, candidates = counselorIncreasePreferences(students_to_modify, extra_schools, student_pref, school_pref, counselor_confidence)
             student_sp, school_sp = galeShapleyModified(n_students, n_schools, student_pref_2, school_pref_2)
             
