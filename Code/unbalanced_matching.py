@@ -221,8 +221,8 @@ def counselorIncreasePreferences(n_students, n_preference_additions, students_pr
     for candidate in candidates:
         current_schools = students_pref[candidate]
         potential_additions = list(set(schools).difference(current_schools))
-        schools_to_add[candidate] = np.random.choice(potential_additions, n_preference_additions, replace=False)
-        students_pref[candidate].append(schools_to_add[candidate])
+        schools_to_add[candidate] = np.random.choice(potential_additions, n_preference_additions, replace=False).tolist()
+        students_pref[candidate] = students_pref[candidate] + schools_to_add[candidate]
         ra.shuffle(students_pref[candidate])
     #Add the student to the preference lists of the schools with a possition with respect to the counselor confidence of placement.
         for school in schools_to_add[candidate]:
@@ -253,18 +253,14 @@ def galeShapleyModified(n_men, n_women, men_preferences, women_preferences):
     woman_spouse = [None] * n_women                     
     # Each man made 0 proposals, which means that 
     # his next proposal will be to the woman number 0 in his list
-    next_man_choice = [0] * n_men
-    # The size of the preference lists of the proposing side
-    size_preferences = len(men_preferences[0])                       
-    #This is the total number of possible proposals before all men go through their full preference lists
-    total_posible_proposals = size_preferences * n_men
+    next_man_choice = [0] * n_men                       
     # While there exists at least one unmarried man or there are men with possible proposals still available:
-    while unmarried_men and (sum(next_man_choice) <= total_posible_proposals):
+    while unmarried_men:
         # Pick an arbitrary unmarried man
         he = unmarried_men[0]
         to_break = 0
 
-        while next_man_choice[he]>=size_preferences and to_break==0:
+        while next_man_choice[he]>=len(men_preferences[he]) and to_break==0:
             if len(unmarried_men)>1:
                 unmarried_men.pop(0)
                 he = unmarried_men[0]
@@ -277,7 +273,7 @@ def galeShapleyModified(n_men, n_women, men_preferences, women_preferences):
         # Store his ranking in this variable for convenience
         his_preferences = men_preferences[he]       
         # Find a woman to propose to
-        she = his_preferences[next_man_choice[he]] 
+        she = his_preferences[next_man_choice[he]]
         # Store her ranking in this variable for convenience
         her_preferences = women_preferences[she]
         # Find the present husband of the selected woman (it might be None)
@@ -352,10 +348,10 @@ def averageRankPartnersModified(student_spouse, school_spouse, student_preferenc
         else:
             school_ranks[school] = prefs.index(school_spouse[school]) + 1
 
-    noncandidates = list(set(student_preferences.keys()).difference(modified_candidates))  
-    candidate_ranks = student_ranks[modified_candidates]
+    noncandidates = list(set(student_preferences.keys()).difference(modified_candidates)) 
+    candidate_ranks = {cand: student_ranks[cand] for cand in modified_candidates}
     candidates_average_rank = sum(candidate_ranks.values())/len(modified_candidates)    
-    noncandidate_ranks = student_ranks[noncandidates]
+    noncandidate_ranks = {cand: student_ranks[cand] for cand in noncandidates}
     noncandidates_average_rank = sum(noncandidate_ranks.values())/len(noncandidates)
 
     school_average_rank = sum(school_ranks.values())/len(list(school_preferences.keys()))
@@ -381,7 +377,7 @@ def simulationPreferenceAdditions(n_students, n_schools, student_pref_sizes, sch
         noncandidates_average_ranks = []
 
         for i in range(iter):
-            if i % 50 == 0:
+            if i % 10 == 0:
                 print('working on iteration: ' + str(i))
 
             student_pref, school_pref = simulationMarriageMarket(n_students, n_schools, student_pref_sizes, school_pref_size)
