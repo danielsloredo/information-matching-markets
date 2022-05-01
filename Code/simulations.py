@@ -1,5 +1,6 @@
 import unbalanced_matching as um
 import counselor_matching as cm
+import real_change_on_rank as rc
 import matplotlib.pyplot as plt
 
 '''
@@ -21,15 +22,16 @@ plt.ylabel("Average rank")
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/rank_diff_pref_sizes.png')
 '''
-
-schools_extra = list(range(1,20,1))
-student_counselor = 100
+'''
+schools_extra = list(range(1,50,1))
+student_counselor = 50
 counselor_conf = .7
 rank_schools, rank_candidates, rank_noncandidates = cm.simulationPreferenceAdditions(1000, 1001, 12, 1000, student_counselor, schools_extra, counselor_conf, 50)
 
 print(rank_schools)
 print(rank_candidates)
 print(rank_noncandidates)
+
 
 lists2 = sorted(rank_candidates.items()) 
 lists3 = sorted(rank_noncandidates.items())
@@ -50,5 +52,28 @@ plt.xlabel("Extra Schools in preference lists")
 plt.ylabel("Average Rank")
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/rank_schools_counselors_2.png')
+'''
+
+
+schools_extra = list(range(1,20,1))
+student_counselor = 1
+counselor_conf = .7
+student_total_change, school_total_change = rc.simulationTrueChange(1000, 1001, 12, 1000, student_counselor, schools_extra, counselor_conf, 1)
+
+print(student_total_change)
+print(school_total_change)
+
+'''
+lists2 = sorted(student_total_change.items()) 
+lists3 = sorted(school_total_change.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+plt.plot(x2, y2, label='Student_Changes')
+plt.plot(x3, y3, label='School_Changes')
+plt.xlabel("Extra Schools in preference lists")
+plt.ylabel("Number of Changes")
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/true_change_spouse.png')
+'''
 
 print('code succesfull')
