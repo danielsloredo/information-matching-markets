@@ -55,25 +55,41 @@ plt.savefig('D:/Documents/CDO/CDO_project/Figures/rank_schools_counselors_2.png'
 '''
 
 
-schools_extra = list(range(1,20,1))
+schools_extra = list(range(1,300,5))
 student_counselor = 1
 counselor_conf = .7
-student_total_change, school_total_change = rc.simulationTrueChange(1000, 1001, 12, 1000, student_counselor, schools_extra, counselor_conf, 1)
+student_total_change, school_total_change, ranks_schools, ranks_candidates, ranks_noncandidates = rc.simulationTrueChange(1000, 1001, 12, 1000, student_counselor, schools_extra, counselor_conf, 50)
 
 print(student_total_change)
 print(school_total_change)
 
-'''
+print(ranks_schools)
+print(ranks_candidates)
+print(ranks_noncandidates)
+
 lists2 = sorted(student_total_change.items()) 
 lists3 = sorted(school_total_change.items())
 x2, y2 = zip(*lists2)
 x3, y3 = zip(*lists3)
+plt.figure(1)
 plt.plot(x2, y2, label='Student_Changes')
 plt.plot(x3, y3, label='School_Changes')
 plt.xlabel("Extra Schools in preference lists")
-plt.ylabel("Number of Changes")
+plt.ylabel("Number of Changes in Match")
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/true_change_spouse.png')
-'''
+
+
+lists1 = sorted(ranks_schools.items()) # sorted by key, return a list of tuples
+x1, y1 = zip(*lists1) # unpack a list of pairs into two tuples
+lists3 = sorted(ranks_noncandidates.items())
+x3, y3 = zip(*lists3)
+plt.figure(2)
+plt.plot(x1, y1, label='Rank_Schools')
+plt.plot(x3, y3, label='Rank_Students')
+plt.xlabel("Extra Schools in preference list")
+plt.ylabel("Average Rank")
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/truerank_counselor_onestudent.png')
 
 print('code succesfull')
