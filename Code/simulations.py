@@ -54,9 +54,9 @@ plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/rank_schools_counselors_2.png')
 '''
 
-
-schools_extra = list(range(1,300,5))
-student_counselor = 1
+'''
+schools_extra = list(range(1,150,5))
+student_counselor = 100
 counselor_conf = .7
 student_total_change, school_total_change, ranks_schools, ranks_candidates, ranks_noncandidates = rc.simulationTrueChange(1000, 1001, 12, 1000, student_counselor, schools_extra, counselor_conf, 50)
 
@@ -77,7 +77,7 @@ plt.plot(x3, y3, label='School_Changes')
 plt.xlabel("Extra Schools in preference lists")
 plt.ylabel("Number of Changes in Match")
 plt.legend(loc="upper left")
-plt.savefig('D:/Documents/CDO/CDO_project/Figures/true_change_spouse.png')
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/true_change_spouse_100.png')
 
 
 lists1 = sorted(ranks_schools.items()) # sorted by key, return a list of tuples
@@ -90,6 +90,41 @@ plt.plot(x3, y3, label='Rank_Students')
 plt.xlabel("Extra Schools in preference list")
 plt.ylabel("Average Rank")
 plt.legend(loc="upper left")
-plt.savefig('D:/Documents/CDO/CDO_project/Figures/truerank_counselor_onestudent.png')
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/truerank_counselor_100student.png')
+'''
+
+
+schools_extra = list(range(1,150,5))
+student_counselor = 100
+counselor_conf = .7
+ranks_student, ranks_student_diff, ranks_school, ranks_school_diff = rc.simulationTrueChangeDifferences(1000, 1001, 12, 1000, student_counselor, schools_extra, counselor_conf, 50)
+
+lists2 = sorted(ranks_student.items()) 
+lists3 = sorted(ranks_student_diff.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+plt.figure(5)
+plt.plot(x2, y2, label='Students same match')
+plt.plot(x3, y3, label='Students different match')
+plt.xlabel("Extra Schools in preference lists")
+plt.ylabel("Average Rank")
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/difference_rank_students100.png')
+
+
+lists2 = sorted(ranks_school.items()) 
+lists3 = sorted(ranks_school_diff.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+plt.figure(6)
+plt.plot(x2, y2, label='Schools same match')
+plt.plot(x3, y3, label='Schools different match')
+plt.xlabel("Extra Schools in preference lists")
+plt.ylabel("Average Rank")
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/difference_rank_schools100.png')
+
+
+
 
 print('code succesfull')
