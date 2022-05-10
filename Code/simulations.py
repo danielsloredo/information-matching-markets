@@ -3,7 +3,7 @@ import counselor_matching as cm
 import real_change_on_rank as rc
 import matplotlib.pyplot as plt
 
-'''
+
 men_pref_sizes = list(range(5,151))
 
 rank_size_men, rank_size_women = um.simulationMCMatching(1000, 1001, men_pref_sizes, 1000, 50)
@@ -21,8 +21,11 @@ plt.xlabel("Average degree d")
 plt.ylabel("Average rank")
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/rank_diff_pref_sizes.png')
-'''
-'''
+
+
+
+
+
 schools_extra = list(range(1,50,1))
 student_counselor = 50
 counselor_conf = .7
@@ -52,9 +55,10 @@ plt.xlabel("Extra Schools in preference lists")
 plt.ylabel("Average Rank")
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/rank_schools_counselors_2.png')
-'''
 
-'''
+
+
+
 schools_extra = list(range(1,150,5))
 student_counselor = 100
 counselor_conf = .7
@@ -91,7 +95,7 @@ plt.xlabel("Extra Schools in preference list")
 plt.ylabel("Average Rank")
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/truerank_counselor_100student.png')
-'''
+
 
 
 schools_extra = list(range(1,150,5))

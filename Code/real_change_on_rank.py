@@ -6,6 +6,9 @@ import unbalanced_matching as um
 import counselor_matching as cm
 
 def changeMatch(student_sp, school_sp, student_sp_2, school_sp_2):
+    '''
+    Function that registers if the student or school changed stable partner after adding schools to the preference list
+    '''
     difference_student = [None] * len(student_sp)
     for index in range(len(student_sp)):
         if student_sp[index] == student_sp_2[index]:
@@ -26,7 +29,7 @@ def changeMatch(student_sp, school_sp, student_sp_2, school_sp_2):
 
 def averageTrueRankPartnersModified(student_spouse, school_spouse, student_preferences, school_preferences, student_preferences_2, school_preferences_2, differences_students, differences_schools, modified_candidates):
     '''
-    Function that computes the average rank of partners in the stable match
+    Function that computes the average rank of partners in the stable match taking into acount if there is a difference in match after adding extra schools to list
     INPUT:
         student_spouse: list with stable partners for students
         school_spouse: list with stable partners for schools
@@ -149,7 +152,6 @@ def simulationTrueChange(n_students, n_schools, student_pref_sizes, school_pref_
 
 def averageTrueRankDifferences(student_spouse, school_spouse, student_preferences, school_preferences, student_preferences_2, school_preferences_2, differences_students, differences_schools, modified_candidates):
     '''
-    Function that computes the average rank of partners in the stable match
     INPUT:
         student_spouse: list with stable partners for students
         school_spouse: list with stable partners for schools
@@ -216,8 +218,7 @@ def averageTrueRankDifferences(student_spouse, school_spouse, student_preference
 
 def simulationTrueChangeDifferences(n_students, n_schools, student_pref_sizes, school_pref_size, students_to_modify, schools_to_add, counselor_confidence, iter):
     '''
-    Function to simulate the average ranks of partners for both sides of a matching market 
-    with heterogeneous sizes on preferences lists for some of the agents
+  
     INPUT:
         n_students: number of students in the market
         n_schools: number of schools in the market
