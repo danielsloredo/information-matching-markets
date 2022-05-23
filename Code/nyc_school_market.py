@@ -22,27 +22,21 @@ def RestrictedMarket(d_student, student_full_preferences, school_full_preference
     student_preferences = {}
     school_preferences = {}
 
-    for student in studen:
-        if n_women < d_men:
-            men_preferences[man] = np.random.choice(women, n_women, replace=False).tolist()
-        else:
-            men_preferences[man] = np.random.choice(women, d_men, replace=False).tolist()
+    for student, s_prefs in student_full_preferences.items:
+        student_preferences[student] = [s_prefs[i] for i in sorted(ra.sample(range(len(s_prefs)), d_student))]
 
-    for woman in women:
+    for school, h_prefs in school_full_preferences.items:
         possible_partners = []
-        for man, prefs in men_preferences.items():
-            if woman in prefs:
-                possible_partners.append(man)
+        for student, prefs in student_preferences.items():
+            if school in prefs:
+                possible_partners.append(student)
         number_poss_partners = len(possible_partners)
         if number_poss_partners > 0:
-            if number_poss_partners < d_women:
-                women_preferences[woman] = np.random.choice(possible_partners, number_poss_partners, replace=False).tolist()
-            else:
-                women_preferences[woman] = np.random.choice(possible_partners, d_women, replace=False).tolist()
+            school_preferences[school] = school_full_preferences[school][possible_partners]
         else:
-            women_preferences[woman] = None
+            school_preferences[school] = None
     
-    return men_preferences, women_preferences
+    return student_preferences, school_preferences
 
 
 
