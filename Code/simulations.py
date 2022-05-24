@@ -1,9 +1,10 @@
 import unbalanced_matching as um
 import counselor_matching as cm
 import real_change_on_rank as rc
+import nyc_school_market as nyc
 import matplotlib.pyplot as plt
 
-
+'''
 men_pref_sizes = list(range(5,151))
 
 rank_size_men, rank_size_women = um.simulationMCMatching(1000, 1001, men_pref_sizes, 1000, 50)
@@ -127,8 +128,14 @@ plt.xlabel("Extra Schools in preference lists")
 plt.ylabel("Average Rank")
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/difference_rank_schools100.png')
+'''
 
+student_f_pref, school_f_pref = nyc.MarriageMarketPreferenceLists(100, 101)
+student_pre, school_pre = nyc.RestrictedMarket(5, student_f_pref, school_f_pref)
+student_sp, school_sp = nyc.galeShapleyModified(100, 101, student_pre, school_pre)
 
+print(student_sp)
 
+print(school_sp)
 
 print('code succesfull')
