@@ -127,3 +127,67 @@ def galeShapleyModified(n_men, n_women, men_preferences, women_preferences):
              next_man_choice[he] = next_man_choice[he] + 1
 
     return man_spouse, woman_spouse
+
+def averageRankPartners(student_spouse, school_spouse, student_preferences, school_preferences):
+    '''
+
+    '''    
+    student_ranks = {}
+    school_ranks = {}
+
+    for student, prefs in student_preferences.items():
+        if student_spouse[student] == None:
+            student_rank_unmatched = len(student_preferences[student]) + 1
+            student_ranks[student] = student_rank_unmatched
+        else:
+            student_ranks[student] = prefs.index(student_spouse[student]) + 1
+    
+    for school, prefs in school_preferences.items():
+        if school_spouse[school] == None:
+            if school_preferences[school] != None:
+                school_rank_unmatched = len(school_preferences[school]) + 1
+                school_ranks[school] = school_rank_unmatched
+            else:
+                skip
+        else:
+            school_ranks[school] = prefs.index(school_spouse[school]) + 1
+
+    student_average_rank = sum(student_ranks.values())/len(list(student_preferences.keys()))
+    school_average_rank = sum(school_ranks.values())/len(list(school_preferences.keys()))
+
+    return student_average_rank, school_average_rank
+
+def simulationMatchingMarket(n_students, n_schools, preferences_size, iterations):
+
+    student_f_pref, school_f_pref = MarriageMarketPreferenceLists(n_students, n_schools)
+
+    student_average_rank = {}
+    school_average_rank = {}
+    student_rank = {list_size: [] for list_size in preferences_size}
+    school_rank = {list_size: [] for list_size in preferences_size}
+
+    for i in range(iterations):
+        print('working on iteration: ' + str(i))
+
+        student_pre = {}
+        school_pre = {}
+        student_sp = {}
+        school_sp = {}
+
+        for list_size in preferences_size:
+            if i % 10 == 0:
+                print('simulating with students preference list size: ' + str(list_size))
+
+            student_pre[list_size], school_pre[list_size] = RestrictedMarket(list_size, student_f_pref, school_f_pref)
+            student_sp[list_size], school_sp[list_size] = galeShapleyModified(n_students, n_schools, student_pre[list_size], school_pre[list_size])
+            student_r, school_r = averageRankPartners(student_sp[list_size], school_sp[list_size], student_pre[list_size], school_pre[list_size])
+            student_rank[list_size].append(student_r)
+            school_rank[list_size].append(school_r) 
+        
+    for list_size in preferences_size:
+        student_average_rank[list_size] = 1/iterations * sum(student_rank[list_size])
+        school_average_rank[list_size] = 1/iterations * sum(school_rank[list_size])
+
+    return student_f_pref, student_average_rank, school_f_pref, school_average_rank
+
+    

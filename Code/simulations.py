@@ -130,12 +130,26 @@ plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/difference_rank_schools100.png')
 '''
 
-student_f_pref, school_f_pref = nyc.MarriageMarketPreferenceLists(100, 101)
-student_pre, school_pre = nyc.RestrictedMarket(5, student_f_pref, school_f_pref)
-student_sp, school_sp = nyc.galeShapleyModified(100, 101, student_pre, school_pre)
+lenght_lists = list(range(10,50,2))
 
-print(student_sp)
+student_pre, student_av_rank, school_pre, school_av_rank = nyc.simulationMatchingMarket(1000, 1001, lenght_lists, 50)
 
-print(school_sp)
+print(student_pre)
+print(student_av_rank)
+print(school_av_rank)
+print(school_av_rank)
+
+lists2 = sorted(student_av_rank.items()) 
+lists3 = sorted(school_av_rank.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+plt.figure(5)
+plt.plot(x2, y2, label='Students average rank')
+plt.plot(x3, y3, label='Schools average rank')
+plt.xlabel("Lenght of students preference sub-list")
+plt.ylabel("Average Rank")
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_market_same_list_origin.png')
+
 
 print('code succesfull')
