@@ -175,8 +175,7 @@ def simulationMatchingMarket(n_students, n_schools, preferences_size, iterations
         school_sp = {}
 
         for list_size in preferences_size:
-            if i % 10 == 0:
-                print('simulating with students preference list size: ' + str(list_size))
+            print('simulating with students preference list size: ' + str(list_size))
 
             student_pre[list_size], school_pre[list_size] = RestrictedMarket(list_size, student_f_pref, school_f_pref)
             student_sp[list_size], school_sp[list_size] = galeShapleyModified(n_students, n_schools, student_pre[list_size], school_pre[list_size])

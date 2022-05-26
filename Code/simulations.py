@@ -1,8 +1,12 @@
+from turtle import color
+import numpy as np
 import unbalanced_matching as um
 import counselor_matching as cm
 import real_change_on_rank as rc
 import nyc_school_market as nyc
 import matplotlib.pyplot as plt
+import json
+import ast
 
 '''
 men_pref_sizes = list(range(5,151))
@@ -130,26 +134,148 @@ plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/difference_rank_schools100.png')
 '''
 
-lenght_lists = list(range(10,50,2))
 
-student_pre, student_av_rank, school_pre, school_av_rank = nyc.simulationMatchingMarket(1000, 1001, lenght_lists, 50)
+'''
+lenght_lists = list(range(10,100,1))
 
-print(student_pre)
-print(student_av_rank)
-print(school_av_rank)
-print(school_av_rank)
+student_pre, student_av_rank, school_pre, school_av_rank = nyc.simulationMatchingMarket(1000, 1001, lenght_lists, 10)
+
+a_file = open("D:/Documents/CDO/CDO_project/Data/student_preferences.json", "w")
+json.dump(student_pre, a_file)
+a_file.close()
+
+b_file = open("D:/Documents/CDO/CDO_project/Data/student_average_ranks.json", "w")
+json.dump(student_av_rank, b_file)
+b_file.close()
+
+c_file = open("D:/Documents/CDO/CDO_project/Data/school_preferences.json", "w")
+json.dump(school_pre, c_file)
+c_file.close()
+
+d_file = open("D:/Documents/CDO/CDO_project/Data/school_average_ranks.json", "w")
+json.dump(school_av_rank, d_file)
+d_file.close()
+
 
 lists2 = sorted(student_av_rank.items()) 
 lists3 = sorted(school_av_rank.items())
 x2, y2 = zip(*lists2)
 x3, y3 = zip(*lists3)
-plt.figure(5)
-plt.plot(x2, y2, label='Students average rank')
-plt.plot(x3, y3, label='Schools average rank')
-plt.xlabel("Lenght of students preference sub-list")
-plt.ylabel("Average Rank")
+plt.figure(7)
+plt.plot(x2, y2, label="Students' average rank")
+plt.plot(x3, y3, label="Schools' average rank")
+plt.xlabel("Lenght of student's sampled sub-list")
+plt.ylabel("Average Rank of stable partner")
 plt.legend(loc="upper left")
-plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_market_same_list_origin.png')
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_market_same_list_origin1.png')
+
+
+#a_file = open("D:/Documents/CDO/CDO_project/Data/student_preferences.json", "r")
+#student_pre =  a_file.read()
+#a_file.close()
+
+b_file = open("D:/Documents/CDO/CDO_project/Data/student_average_ranks.json", "r")
+student_av_rank = ast.literal_eval(b_file.read())
+b_file.close()
+
+#c_file = open("D:/Documents/CDO/CDO_project/Data/school_preferences.json", "r")
+#school_pre = c_file.read()
+#c_file.close()
+
+d_file = open("D:/Documents/CDO/CDO_project/Data/school_average_ranks.json", "r")
+school_av_rank = ast.literal_eval(d_file.read())
+d_file.close()
+
+student_sample_ranks = {k: student_av_rank[k] for k in student_av_rank.keys() & {'10', '15', '20', '25', '30', '35', '40'}}
+school_sample_ranks = {k: school_av_rank[k] for k in school_av_rank.keys() & {'10', '14', '20', '26', '30', '35', '40'}}
+
+
+barWidth = 0.25
+
+lists2 = sorted(student_sample_ranks.items()) 
+lists3 = sorted(school_sample_ranks.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+
+br2 = np.arange(len(x2))
+br3 = [x + barWidth for x in br2]
+
+plt.figure(8)
+plt.bar(br2, y2, color = 'royalblue', label="Students' average rank", width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label="Schools' average rank", width=barWidth)
+plt.xlabel("Lenght of student's sampled sub-list")
+plt.ylabel("Average Rank of stable partner")
+plt.xticks([r + barWidth*.5 for r in range(len(x2))], ['10', '15', '20', '25', '30', '35', '40'])
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_sample_same_list_origin5.png')
+
+'''
+
+
+lenght_lists = list(range(5,40,1))
+
+student_pre, student_av_rank, school_pre, school_av_rank = nyc.simulationMatchingMarket(7500, 7300, lenght_lists, 5)
+
+a_file = open("D:/Documents/CDO/CDO_project/Data/student_preferences_realmarket.json", "w")
+json.dump(student_pre, a_file)
+a_file.close()
+
+b_file = open("D:/Documents/CDO/CDO_project/Data/student_average_ranks_realmarket.json", "w")
+json.dump(student_av_rank, b_file)
+b_file.close()
+
+c_file = open("D:/Documents/CDO/CDO_project/Data/school_preferences_realmarket.json", "w")
+json.dump(school_pre, c_file)
+c_file.close()
+
+d_file = open("D:/Documents/CDO/CDO_project/Data/school_average_ranks_realmarket.json", "w")
+json.dump(school_av_rank, d_file)
+d_file.close()
+
+
+lists2 = sorted(student_av_rank.items()) 
+lists3 = sorted(school_av_rank.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+plt.figure(7)
+plt.plot(x2, y2, label="Students' average rank")
+plt.plot(x3, y3, label="Schools' average rank")
+plt.xlabel("Lenght of student's sampled sub-list")
+plt.ylabel("Average Rank of stable partner")
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_market_same_list_origin_realmarket.png')
+
+
+b_file = open("D:/Documents/CDO/CDO_project/Data/student_average_ranks_realmarket.json", "r")
+student_av_rank = ast.literal_eval(b_file.read())
+b_file.close()
+
+d_file = open("D:/Documents/CDO/CDO_project/Data/school_average_ranks_realmarket.json", "r")
+school_av_rank = ast.literal_eval(d_file.read())
+d_file.close()
+
+student_sample_ranks = {k: student_av_rank[k] for k in student_av_rank.keys() & {'10', '15', '20', '25', '30', '35', '39'}}
+school_sample_ranks = {k: school_av_rank[k] for k in school_av_rank.keys() & {'10', '15', '20', '25', '30', '35', '39'}}
+
+
+barWidth = 0.25
+
+lists2 = sorted(student_sample_ranks.items()) 
+lists3 = sorted(school_sample_ranks.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+
+br2 = np.arange(len(x2))
+br3 = [x + barWidth for x in br2]
+
+plt.figure(8)
+plt.bar(br2, y2, color = 'royalblue', label="Students' average rank", width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label="Schools' average rank", width=barWidth)
+plt.xlabel("Lenght of student's sampled sub-list")
+plt.ylabel("Average Rank of stable partner")
+plt.xticks([r + barWidth*.5 for r in range(len(x2))], ['10', '15', '20', '25', '30', '35', '40'])
+plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_sample_same_list_origin_realmarket.png')
 
 
 print('code succesfull')
