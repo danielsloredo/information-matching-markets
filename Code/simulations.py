@@ -281,7 +281,8 @@ plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_sample_same_list_origin_
 student_Match, school_Match, student_ranks, school_ranks, student_original_preferences, school_original_preferences = nyc.simulationMatchingIncreasePreferences(1, 10, 1000, 1001, 10)
 student_changes, school_changes = nyc.differencesMatch(1, 10, 10, student_Match, school_Match)
 total_change_match_students, total_change_match_schools, mean_change_match_students, mean_change_match_schools, num_students_change, num_schools_change = nyc.totalDifferencesMatch(student_changes, school_changes)
-    
+student_original_ranks, school_original_ranks = nyc.originalRank(student_Match, school_Match, student_original_preferences, school_original_preferences)    
+
 print('student stable outcomes')
 print(student_Match)
 print('school stable outcomes')
@@ -309,5 +310,9 @@ print(num_students_change)
 print('number of school changes in stable match')
 print(num_schools_change)
 
+print('Original ranks for students')
+print(student_original_ranks)
+print('Original ranks for schools')
+print(school_original_ranks)
 
 print('code succesfull')

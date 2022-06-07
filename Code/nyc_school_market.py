@@ -359,3 +359,32 @@ def totalDifferencesMatch(change_match_students, change_match_schools):
     
     return total_change_match_students, total_change_match_schools, mean_change_match_students, mean_change_match_schools, num_students_change, num_schools_change
 
+
+def originalRank(student_M, school_M, student_original_pref, school_original_pref):
+    '''
+    Function that computes the rank of partner according to the full list of preferences for each agent
+    '''
+
+    student_ranks = {k: [None]*len(s) for k, s in student_M.items()}
+    school_ranks = {k: [None]*len(s) for k, s in school_M.items()}
+
+    for k, spouses in student_M.items():
+        for student, prefs in student_original_pref.items():
+            if spouses[student] == None:
+                student_rank_unmatched = len(prefs) + 1
+                student_ranks[k][student] = student_rank_unmatched
+            else: 
+                student_ranks[k][student] = prefs.index(spouses[student]) + 1
+    
+    for k, spouses in school_M.items():
+        for school, prefs in school_original_pref.items():
+            if spouses[school] == None:
+                if prefs != None:
+                    school_rank_unmatched = len(prefs) + 1
+                    school_ranks[k][school] = school_rank_unmatched
+                else:
+                    school_ranks[k][school] = None
+            else:
+                school_ranks[k][school] = prefs.index(spouses[school]) + 1   
+                
+    return student_ranks, school_ranks
