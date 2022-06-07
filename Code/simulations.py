@@ -211,11 +211,7 @@ plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_sample_same_list_origin5
 
 '''
 
-<<<<<<< HEAD
 '''
-=======
-
->>>>>>> d0b8a94431985ff7ab0852c4a27818c9bceb945f
 lenght_lists = list(range(5,40,1))
 
 student_pre, student_av_rank, school_pre, school_av_rank = nyc.simulationMatchingMarket(7500, 7300, lenght_lists, 5)
@@ -282,7 +278,10 @@ plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_sample_same_list_origin_realmarket.png')
 '''
 
-student_Match, school_Match, student_ranks, school_ranks = nyc.simulationMatchingIncreasePreferences(1, 10, 20, 21, 5)
+student_Match, school_Match, student_ranks, school_ranks, student_original_preferences, school_original_preferences = nyc.simulationMatchingIncreasePreferences(1, 10, 1000, 1001, 10)
+student_changes, school_changes = nyc.differencesMatch(1, 10, 10, student_Match, school_Match)
+total_change_match_students, total_change_match_schools, mean_change_match_students, mean_change_match_schools, num_students_change, num_schools_change = nyc.totalDifferencesMatch(student_changes, school_changes)
+    
 print('student stable outcomes')
 print(student_Match)
 print('school stable outcomes')
@@ -291,5 +290,24 @@ print('student ranks for partners')
 print(student_ranks)
 print('schools ranks for partners')
 print(school_ranks)
+print('student changes in table match')
+print(student_changes)
+print('school changes in stable match')
+print(school_changes)
+
+print('total student changes in table match')
+print(total_change_match_students)
+print('total school changes in stable match')
+print(total_change_match_schools)
+print('mean student changes in table match')
+print(mean_change_match_students)
+print('mean school changes in stable match')
+print(mean_change_match_schools)
+
+print('number of student changes in table match')
+print(num_students_change)
+print('number of school changes in stable match')
+print(num_schools_change)
+
 
 print('code succesfull')

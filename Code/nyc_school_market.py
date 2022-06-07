@@ -1,3 +1,4 @@
+from statistics import mean
 from unittest import skip
 import numpy as np
 import random as ra
@@ -190,11 +191,11 @@ def rankPartners(student_spouse, school_spouse, student_preferences, school_pref
     
     for school, prefs in school_preferences.items():
         if school_spouse[school] == None:
-            #if school_preferences[school] != None:
-            school_rank_unmatched = len(school_preferences[school]) + 1
-            school_ranks[school] = school_rank_unmatched
-            #else:
-                #school_ranks[school] = None
+            if school_preferences[school] != None:
+                school_rank_unmatched = len(school_preferences[school]) + 1
+                school_ranks[school] = school_rank_unmatched
+            else:
+                school_ranks[school] = None
         else:
             school_ranks[school] = prefs.index(school_spouse[school]) + 1
 
@@ -286,18 +287,75 @@ def simulationMatchingIncreasePreferences(Delta, k, n_students, n_schools, addit
         student_M[k], school_M[k] = galeShapleyModified(n_students, n_schools, student_pre[k], school_pre[k])
         student_M_rank[k], school_M_rank[k] = rankPartners(student_M[k], school_M[k], student_pre[k], school_pre[k])
 
-    return student_M, school_M, student_M_rank, school_M_rank
+    return student_M, school_M, student_M_rank, school_M_rank, student_f_pref, school_f_pref
 
 def differencesMatch(Delta, k , additions, student_M, school_M):
-    
+    '''
+    Function that computes M_k/M_{k-1} for each one of the agents
+    '''
+    change_match_students = {}
+    change_match_schools = {}
+
     for j in range(additions):
-        change_match = []
+    
         k_prev = k
         k = k + Delta
-        for i in len(student_M[k]):
-            if student_M[k_prev][i]
-            change_match.append(student_M[k][i]/student_M[k_prev][i])
+        change  = []
+
+        for i in range(len(student_M[k])):
+            if (student_M[k_prev][i] != None) and (student_M[k][i] != None):
+                match_prev = student_M[k_prev][i] + 1
+                match_new = student_M[k][i] + 1
+                change.append(match_new/match_prev)
+            elif (student_M[k][i] != None) and (student_M[k_prev][i] == None):
+                match_new = student_M[k][i]+1 
+                change.append(match_new)
+            else: 
+                change.append(None)
+        
+        change_match_students[k] = change
+
+        change_school  = []
+
+        for i in range(len(school_M[k])):
+            if (school_M[k_prev][i] != None) and (school_M[k][i] != None):
+                match_new = school_M[k][i] + 1
+                match_prev = school_M[k_prev][i] + 1
+                change_school.append(match_new/match_prev)
+            elif (school_M[k][i] != None) and (school_M[k_prev][i] == None):
+                match_new = school_M[k][i] + 1
+                change_school.append(match_new)
+            else: 
+                change_school.append(None)
+        
+        change_match_schools[k] = change_school
 
 
+    return change_match_students, change_match_schools
 
-    return change_match
+
+def totalDifferencesMatch(change_match_students, change_match_schools):
+    '''
+    Function that computes different measures of total change on the stable outcomes
+    '''
+    total_change_match_students = {}
+    total_change_match_schools = {}
+    mean_change_match_students = {}
+    mean_change_match_schools = {}
+    num_students_change = {}
+    num_schools_change = {}
+
+    for k, changes in change_match_students.items():
+        changes_temp = [x for x in changes if x!= None]
+        total_change_match_students[k] = sum(changes_temp)
+        mean_change_match_students[k] = mean(changes_temp)
+        num_students_change[k] = sum(map(lambda x : x != 1, changes_temp))
+    
+    for k, changes in change_match_schools.items():
+        changes_temp = [x for x in changes if x!= None]
+        total_change_match_schools[k] = sum(changes_temp)
+        mean_change_match_schools[k] = mean(changes_temp)
+        num_schools_change[k] = sum(map(lambda x : x != 1, changes_temp))
+    
+    return total_change_match_students, total_change_match_schools, mean_change_match_students, mean_change_match_schools, num_students_change, num_schools_change
+
