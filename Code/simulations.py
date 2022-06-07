@@ -211,7 +211,11 @@ plt.savefig('D:/Documents/CDO/CDO_project/Figures/ranks_sample_same_list_origin5
 
 '''
 
+<<<<<<< HEAD
 '''
+=======
+
+>>>>>>> d0b8a94431985ff7ab0852c4a27818c9bceb945f
 lenght_lists = list(range(5,40,1))
 
 student_pre, student_av_rank, school_pre, school_av_rank = nyc.simulationMatchingMarket(7500, 7300, lenght_lists, 5)

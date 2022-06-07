@@ -254,11 +254,9 @@ def simulationMatchingMarket(n_students, n_schools, preferences_size, iterations
 
             student_pre[list_size], school_pre[list_size] = RestrictedMarket(list_size, student_f_pref, school_f_pref)
             student_sp[list_size], school_sp[list_size] = galeShapleyModified(n_students, n_schools, student_pre[list_size], school_pre[list_size])
-            student_r, school_r = rankPartners(student_sp[list_size], school_sp[list_size], student_pre[list_size], school_pre[list_size])
+            student_r, school_r = averageRankPartners(student_sp[list_size], school_sp[list_size], student_pre[list_size], school_pre[list_size])
             student_rank[list_size].append(student_r)
             school_rank[list_size].append(school_r) 
-        
-    for list_size in preferences_size:
         student_average_rank[list_size] = 1/iterations * sum(student_rank[list_size])
         school_average_rank[list_size] = 1/iterations * sum(school_rank[list_size])
 
