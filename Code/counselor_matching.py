@@ -1,7 +1,7 @@
 from unittest import skip
 import numpy as np
 import random as ra
-
+import unbalanced_matching as um
 
 def counselorIncreasePreferences(n_students, n_preference_additions, students_pref, school_pref, counselor_confidence):
     '''
@@ -17,30 +17,31 @@ def counselorIncreasePreferences(n_students, n_preference_additions, students_pr
         school_pref: dictionarh with the new preference lists for schools
         candidates: lists of modified students
     '''
-    
-    schools = list(school_pref.keys())
+    students_pref_2 = dict(students_pref)
+    school_pref_2 = dict(school_pref)
+    schools = list(school_pref_2.keys())
     ## Chose students that will hire a counselor
-    candidates = np.random.choice(list(students_pref.keys()), n_students, replace = False).tolist()
+    candidates = np.random.choice(list(students_pref_2.keys()), n_students, replace = False).tolist()
     #Add the specified amount of schools to the preference list of the student
     schools_to_add = {}
     pos_school_pref = round(10*(1-counselor_confidence))
     for candidate in candidates:
-        current_schools = students_pref[candidate]
+        current_schools = students_pref_2[candidate]
         potential_additions = list(set(schools).difference(current_schools))
         schools_to_add[candidate] = np.random.choice(potential_additions, n_preference_additions, replace=False).tolist()
-        students_pref[candidate] = students_pref[candidate] + schools_to_add[candidate]
-        ra.shuffle(students_pref[candidate])
+        students_pref_2[candidate] = students_pref_2[candidate] + schools_to_add[candidate]
+        ra.shuffle(students_pref_2[candidate])
     #Add the student to the preference lists of the schools with a possition with respect to the counselor confidence of placement.
         for school in schools_to_add[candidate]:
-            if school_pref[school]==None:
-                school_pref[school]=[candidate]
+            if school_pref_2[school]==None:
+                school_pref_2[school]=[candidate]
             else:
-                if len(school_pref[school])>pos_school_pref:
-                    school_pref[school].insert(pos_school_pref, candidate)
+                if len(school_pref_2[school])>pos_school_pref:
+                    school_pref_2[school].insert(pos_school_pref, candidate)
                 else:
-                    school_pref[school].append(candidate)
+                    school_pref_2[school].append(candidate)
         
-    return students_pref, school_pref, candidates
+    return students_pref_2, school_pref_2, candidates
 
 def galeShapleyModified(n_men, n_women, men_preferences, women_preferences):
     '''
@@ -206,10 +207,10 @@ def simulationPreferenceAdditions(n_students, n_schools, student_pref_sizes, sch
             if i % 10 == 0:
                 print('working on iteration: ' + str(i))
 
-            student_pref, school_pref = simulationMarriageMarket(n_students, n_schools, student_pref_sizes, school_pref_size)
+            student_pref, school_pref = um.simulationMarriageMarket(n_students, n_schools, student_pref_sizes, school_pref_size)
             student_pref_2, school_pref_2, candidates = counselorIncreasePreferences(students_to_modify, extra_schools, student_pref, school_pref, counselor_confidence)
             student_sp, school_sp = galeShapleyModified(n_students, n_schools, student_pref_2, school_pref_2)
-            
+
             school_average_r, candidate_av_rank, noncandidates_av_rank = averageRankPartnersModified(student_sp, school_sp, student_pref_2, school_pref_2, candidates)
             candidate_average_ranks.append(candidate_av_rank)
             school_average_ranks.append(school_average_r)
