@@ -388,3 +388,4 @@ def originalRank(student_M, school_M, student_original_pref, school_original_pre
                 school_ranks[k][school] = prefs.index(spouses[school]) + 1   
                 
     return student_ranks, school_ranks
+
