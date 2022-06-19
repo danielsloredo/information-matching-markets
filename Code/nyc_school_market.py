@@ -469,10 +469,16 @@ def improve_original_rank(change_rank_students, change_rank_schools, num_student
     pct_schools_improve = {}
 
     for k, changes in change_rank_students.items():
-        pct_students_improve[k] = sum(map(lambda x : x == 1, changes))/num_students_change[k]
+        if num_students_change[k] > 0: 
+            pct_students_improve[k] = sum(map(lambda x : x == 1, changes))/num_students_change[k]
+        else: 
+            pct_students_improve[k] = 0
     
     for k, changes in change_rank_schools.items():
-        pct_schools_improve[k] = sum(map(lambda x : x == 1, changes))/num_schools_change[k]
+        if num_schools_change[k] > 0: 
+            pct_schools_improve[k] = sum(map(lambda x : x == 1, changes))/num_schools_change[k]
+        else: 
+            pct_schools_improve[k] = 0
 
     return pct_students_improve, pct_schools_improve
 

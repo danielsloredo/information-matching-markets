@@ -417,17 +417,20 @@ plt.savefig('D:/Documents/CDO/CDO_project/Figures/change_original_rank.png')
 
 
 
+Delta = 2
+k = 10 
+additions = 495
 
-student_Match, school_Match, student_ranks, school_ranks, student_original_preferences, school_original_preferences = nyc.simulationMatchingIncreasePreferences(2, 10, 1000, 1001, 495)
+student_Match, school_Match, student_ranks, school_ranks, student_original_preferences, school_original_preferences = nyc.simulationMatchingIncreasePreferences(Delta, k, 1000, 1001, additions)
 
-student_changes, school_changes = nyc.differencesMatch(2, 10, 495, student_Match, school_Match)
+student_changes, school_changes = nyc.differencesMatch(Delta, k, additions, student_Match, school_Match)
 num_students_change, num_schools_change = nyc.totalDifferencesMatch(student_changes, school_changes)
 
-student_unmatched_matched, school_unmatched_matched = nyc.unmatched_matched(2, 10, 495, student_Match, school_Match)
+student_unmatched_matched, school_unmatched_matched = nyc.unmatched_matched(Delta, k, additions, student_Match, school_Match)
 num_students_unm_mat, num_schools_unm_mat = nyc.total_unmatched_matched(student_unmatched_matched, school_unmatched_matched)
 
 student_original_ranks, school_original_ranks = nyc.originalRank(student_Match, school_Match, student_original_preferences, school_original_preferences)    
-student_changes_orank, school_changes_orank = nyc.change_original_rank(2, 10, 495, student_original_ranks, school_original_ranks)
+student_changes_orank, school_changes_orank = nyc.change_original_rank(Delta, k, additions, student_original_ranks, school_original_ranks)
 num_students_imp, num_schools_imp = nyc.improve_original_rank(student_changes_orank, school_changes_orank, num_students_change, num_schools_change)
 
 print('number of students unmatched to matched')
@@ -448,6 +451,7 @@ plt.ylabel("M_k/M_{k-1}")
 #plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/edges_change_match_long.png')
 
+'''
 student_sample_edges_change = {k: num_students_change[k] for k in num_students_change.keys() & [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
 
 lists2 = sorted(student_sample_edges_change.items()) 
@@ -460,7 +464,7 @@ plt.ylabel("M_k/M_{k-1}")
 plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
 #plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/edges_change_match.png')
-
+'''
 
 lists2 = sorted(num_students_unm_mat.items()) 
 x2, y2 = zip(*lists2)
@@ -473,6 +477,7 @@ plt.ylabel("|Unmatched to Matched|")
 #plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/unmatched_to_matched_long.png')
 
+'''
 student_sample_edges_change = {k: num_students_unm_mat[k] for k in num_students_unm_mat.keys() & [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
 lists2 = sorted(student_sample_edges_change.items()) 
 x2, y2 = zip(*lists2)
@@ -484,7 +489,7 @@ plt.ylabel("|Unmatched to Matched|")
 plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
 #plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/unmatched_to_matched.png')
-
+'''
 
 lists2 = sorted(num_students_imp.items()) 
 x2, y2 = zip(*lists2)
@@ -492,11 +497,12 @@ br2 = np.arange(len(x2))
 plt.figure(19)
 plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("|Students with better match|")
+plt.ylabel("% Students with better match")
 #plt.xticks([r for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
 #plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/improvement_rank_match_long.png')
 
+'''
 student_sample_imp = {k: num_students_imp[k] for k in num_students_imp.keys() & [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
 lists2 = sorted(student_sample_imp.items()) 
 x2, y2 = zip(*lists2)
@@ -504,10 +510,10 @@ br2 = np.arange(len(x2))
 plt.figure(20)
 plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("|Students with better match|")
+plt.ylabel("% Students with better match")
 plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
 #plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/improvement_rank_match.png')
-
+'''
 
 print('code succesfull')
