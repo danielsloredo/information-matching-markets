@@ -325,50 +325,31 @@ school_original_preferences = json.loads(d_file.read())
 d_file.close()
 '''
 
-student_Match, school_Match, student_ranks, school_ranks, student_original_preferences, school_original_preferences = nyc.simulationMatchingIncreasePreferences(1, 10, 1000, 1001, 10)
+'''
+student_Match, school_Match, student_ranks, school_ranks, student_original_preferences, school_original_preferences = nyc.simulationMatchingIncreasePreferences(1, 10, 1000, 1001, 990)
 
-student_changes, school_changes = nyc.differencesMatch(1, 10, 10, student_Match, school_Match)
+student_changes, school_changes = nyc.differencesMatch(1, 10, 990, student_Match, school_Match)
 total_change_match_students, total_change_match_schools, mean_change_match_students, mean_change_match_schools, num_students_change, num_schools_change = nyc.totalDifferencesMatch(student_changes, school_changes)
 
-student_original_ranks, school_original_ranks = nyc.originalRank(student_Match, school_Match, student_original_preferences, school_original_preferences)    
-student_changes_orank, school_changes_orank = nyc.differencesMatch(1, 10, 10, student_original_ranks, school_original_ranks)
-total_change_orank_students, total_change_orank_schools, mean_change_orank_students, mean_change_orank_schools, num_students_change_orank, num_schools_change_orank = nyc.totalDifferencesMatch(student_changes_orank, school_changes_orank)
-
-print('total student changes in table match')
-print(total_change_match_students)
-print('total school changes in stable match')
-print(total_change_match_schools)
-print('mean student changes in table match')
-print(mean_change_match_students)
-print('mean school changes in stable match')
-print(mean_change_match_schools)
-print('number of student changes in table match')
-print(num_students_change)
-print('number of school changes in stable match')
-print(num_schools_change)
-
-print('mean student changes in table match rank')
-print(mean_change_orank_students)
-print('mean school changes in stable match rank')
-print(mean_change_orank_schools)
-
+#student_original_ranks, school_original_ranks = nyc.originalRank(student_Match, school_Match, student_original_preferences, school_original_preferences)    
+#student_changes_orank, school_changes_orank = nyc.differencesMatch(1, 10, 990, student_original_ranks, school_original_ranks)
+#total_change_orank_students, total_change_orank_schools, mean_change_orank_students, mean_change_orank_schools, num_students_change_orank, num_schools_change_orank = nyc.totalDifferencesMatch(student_changes_orank, school_changes_orank)
 
 barWidth = 0.25
+
 ##
 lists2 = sorted(total_change_match_students.items()) 
 lists3 = sorted(total_change_match_schools.items())
 x2, y2 = zip(*lists2)
 x3, y3 = zip(*lists3)
-
 br2 = np.arange(len(x2))
 br3 = [x + barWidth for x in br2]
-
 plt.figure(9)
 plt.bar(br2, y2, color = 'royalblue', label="Students", width=barWidth)
 plt.bar(br3, y3, color = 'sandybrown', label="Schools", width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("|M_k/M_{k-1}|")
-plt.xticks([r + barWidth*.5 for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
+plt.xticks([r + barWidth*.5 for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/change_match.png')
 
@@ -377,38 +358,45 @@ lists2 = sorted(mean_change_match_students.items())
 lists3 = sorted(mean_change_match_schools.items())
 x2, y2 = zip(*lists2)
 x3, y3 = zip(*lists3)
-
 br2 = np.arange(len(x2))
 br3 = [x + barWidth for x in br2]
-
 plt.figure(10)
 plt.bar(br2, y2, color = 'royalblue', label="Students", width=barWidth)
 plt.bar(br3, y3, color = 'sandybrown', label="Schools", width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("mean(M_k/M_{k-1})")
-plt.xticks([r + barWidth*.5 for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
+plt.xticks([r + barWidth*.5 for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/mean_change_match.png')
 
-###
+###################################################################################################################
+
 lists2 = sorted(num_students_change.items()) 
-lists3 = sorted(num_schools_change.items())
 x2, y2 = zip(*lists2)
-x3, y3 = zip(*lists3)
-
 br2 = np.arange(len(x2))
-br3 = [x + barWidth for x in br2]
-
-plt.figure(11)
-plt.bar(br2, y2, color = 'royalblue', label="Students", width=barWidth)
-plt.bar(br3, y3, color = 'sandybrown', label="Schools", width=barWidth)
+plt.figure(12)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("Number of students that changed Stable Partner")
-plt.xticks([r + barWidth*.5 for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
-plt.legend(loc="upper left")
-plt.savefig('D:/Documents/CDO/CDO_project/Figures/number_change_match.png')
+plt.ylabel("M_k/M_{k-1}")
+#plt.xticks([r for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/edges_change_match_long.png')
 
-###
+student_sample_edges_change = {k: num_students_change[k] for k in num_students_change.keys() & [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
+
+lists2 = sorted(student_sample_edges_change.items()) 
+x2, y2 = zip(*lists2)
+br2 = np.arange(len(x2))
+plt.figure(13)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("M_k/M_{k-1}")
+plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/edges_change_match.png')
+
+################################################################################################################################
+
 lists2 = sorted(mean_change_orank_students.items()) 
 lists3 = sorted(mean_change_orank_schools.items())
 x2, y2 = zip(*lists2)
@@ -417,15 +405,109 @@ x3, y3 = zip(*lists3)
 br2 = np.arange(len(x2))
 br3 = [x + barWidth for x in br2]
 
-plt.figure(12)
+plt.figure(14)
 plt.bar(br2, y2, color = 'royalblue', label="Students", width=barWidth)
 plt.bar(br3, y3, color = 'sandybrown', label="Schools", width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("mean(Rank_k/Rank_{k-1})")
-plt.xticks([r + barWidth*.5 for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
+plt.xticks([r + barWidth*.5 for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
 plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/change_original_rank.png')
+'''
 
+
+
+
+student_Match, school_Match, student_ranks, school_ranks, student_original_preferences, school_original_preferences = nyc.simulationMatchingIncreasePreferences(2, 10, 1000, 1001, 495)
+
+student_changes, school_changes = nyc.differencesMatch(2, 10, 495, student_Match, school_Match)
+num_students_change, num_schools_change = nyc.totalDifferencesMatch(student_changes, school_changes)
+
+student_unmatched_matched, school_unmatched_matched = nyc.unmatched_matched(2, 10, 495, student_Match, school_Match)
+num_students_unm_mat, num_schools_unm_mat = nyc.total_unmatched_matched(student_unmatched_matched, school_unmatched_matched)
+
+student_original_ranks, school_original_ranks = nyc.originalRank(student_Match, school_Match, student_original_preferences, school_original_preferences)    
+student_changes_orank, school_changes_orank = nyc.change_original_rank(2, 10, 495, student_original_ranks, school_original_ranks)
+num_students_imp, num_schools_imp = nyc.improve_original_rank(student_changes_orank, school_changes_orank, num_students_change, num_schools_change)
+
+print('number of students unmatched to matched')
+print(num_students_change)
+print('number of schools unmatched to matched')
+print(num_schools_change)
+
+barWidth = 0.25
+
+lists2 = sorted(num_students_change.items()) 
+x2, y2 = zip(*lists2)
+br2 = np.arange(len(x2))
+plt.figure(15)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("M_k/M_{k-1}")
+#plt.xticks([r for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/edges_change_match_long.png')
+
+student_sample_edges_change = {k: num_students_change[k] for k in num_students_change.keys() & [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
+
+lists2 = sorted(student_sample_edges_change.items()) 
+x2, y2 = zip(*lists2)
+br2 = np.arange(len(x2))
+plt.figure(16)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("M_k/M_{k-1}")
+plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/edges_change_match.png')
+
+
+lists2 = sorted(num_students_unm_mat.items()) 
+x2, y2 = zip(*lists2)
+br2 = np.arange(len(x2))
+plt.figure(17)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Unmatched to Matched|")
+#plt.xticks([r for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/unmatched_to_matched_long.png')
+
+student_sample_edges_change = {k: num_students_unm_mat[k] for k in num_students_unm_mat.keys() & [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
+lists2 = sorted(student_sample_edges_change.items()) 
+x2, y2 = zip(*lists2)
+br2 = np.arange(len(x2))
+plt.figure(18)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Unmatched to Matched|")
+plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/unmatched_to_matched.png')
+
+
+lists2 = sorted(num_students_imp.items()) 
+x2, y2 = zip(*lists2)
+br2 = np.arange(len(x2))
+plt.figure(19)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Students with better match|")
+#plt.xticks([r for r in range(len(x2))], x2, rotation = 90, fontsize = 4)
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/improvement_rank_match_long.png')
+
+student_sample_imp = {k: num_students_imp[k] for k in num_students_imp.keys() & [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
+lists2 = sorted(student_sample_imp.items()) 
+x2, y2 = zip(*lists2)
+br2 = np.arange(len(x2))
+plt.figure(20)
+plt.bar(br2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Students with better match|")
+plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'])
+#plt.legend(loc="upper left")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures/improvement_rank_match.png')
 
 
 print('code succesfull')

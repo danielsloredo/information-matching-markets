@@ -281,6 +281,7 @@ def simulationMatchingIncreasePreferences(Delta, k, n_students, n_schools, addit
     student_M_rank[k], school_M_rank[k] = rankPartners(student_M[k], school_M[k], student_pre[k], school_pre[k])
     
     for j in range(1,additions+1):
+        print('working on addition: ' + str(j))
         k_prev = k
         k = k + Delta
         student_pre[k], school_pre[k] = increasePreferenceSublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
@@ -291,7 +292,7 @@ def simulationMatchingIncreasePreferences(Delta, k, n_students, n_schools, addit
 
 def differencesMatch(Delta, k , additions, student_M, school_M):
     '''
-    Function that computes M_k/M_{k-1} for each one of the agents
+    Function that computes the change in stable outcome
     '''
     change_match_students = {}
     change_match_schools = {}
@@ -303,62 +304,93 @@ def differencesMatch(Delta, k , additions, student_M, school_M):
         change  = []
 
         for i in range(len(student_M[k])):
-            if (student_M[k_prev][i] != None) and (student_M[k][i] != None):
-                match_prev = student_M[k_prev][i] + 1
-                match_new = student_M[k][i] + 1
-                change.append(match_new/match_prev)
-            elif (student_M[k][i] != None) and (student_M[k_prev][i] == None):
-                match_new = student_M[k][i]+1 
-                change.append(match_new)
+            match_prev = student_M[k_prev][i]
+            match_new = student_M[k][i]
+            if (match_prev != match_new):
+                change.append(1)
             else: 
-                change.append(None)
+                change.append(0)
         
         change_match_students[k] = change
 
         change_school  = []
 
         for i in range(len(school_M[k])):
-            if (school_M[k_prev][i] != None) and (school_M[k][i] != None):
-                match_new = school_M[k][i] + 1
-                match_prev = school_M[k_prev][i] + 1
-                change_school.append(match_new/match_prev)
-            elif (school_M[k][i] != None) and (school_M[k_prev][i] == None):
-                match_new = school_M[k][i] + 1
-                change_school.append(match_new)
+            match_new = school_M[k][i]
+            match_prev = school_M[k_prev][i]
+            if (match_prev != match_new):
+                change_school.append(1)
             else: 
-                change_school.append(None)
+                change_school.append(0)
         
         change_match_schools[k] = change_school
-
 
     return change_match_students, change_match_schools
 
 
 def totalDifferencesMatch(change_match_students, change_match_schools):
     '''
-    Function that computes different measures of total change on the stable outcomes
+    Function that computes total change on the stable outcomes
     '''
-    total_change_match_students = {}
-    total_change_match_schools = {}
-    mean_change_match_students = {}
-    mean_change_match_schools = {}
     num_students_change = {}
     num_schools_change = {}
 
     for k, changes in change_match_students.items():
-        changes_temp = [x for x in changes if x!= None]
-        total_change_match_students[k] = sum(changes_temp)
-        mean_change_match_students[k] = mean(changes_temp)
-        num_students_change[k] = sum(map(lambda x : x != 1, changes_temp))
+        num_students_change[k] = sum(map(lambda x : x == 1, changes))
     
     for k, changes in change_match_schools.items():
-        changes_temp = [x for x in changes if x!= None]
-        total_change_match_schools[k] = sum(changes_temp)
-        mean_change_match_schools[k] = mean(changes_temp)
-        num_schools_change[k] = sum(map(lambda x : x != 1, changes_temp))
+        num_schools_change[k] = sum(map(lambda x : x == 1, changes))
     
-    return total_change_match_students, total_change_match_schools, mean_change_match_students, mean_change_match_schools, num_students_change, num_schools_change
+    return num_students_change, num_schools_change
 
+def unmatched_matched(Delta, k , additions, student_M, school_M):
+    '''
+    Function that tells us how many students went from being unmatched to being match when k increases
+    '''
+    change_match_students = {}
+    change_match_schools = {}
+
+    for j in range(additions):
+    
+        k_prev = k
+        k = k + Delta
+        change  = []
+
+        for i in range(len(student_M[k])):
+            if (student_M[k][i] != None) and (student_M[k_prev][i] == None): 
+                change.append(1)
+            else: 
+                change.append(0)
+        
+        change_match_students[k] = change
+
+        change_school  = []
+
+        for i in range(len(school_M[k])):
+            if (school_M[k][i] != None) and (school_M[k_prev][i] == None):
+                change_school.append(1)
+            else: 
+                change_school.append(0)
+        
+        change_match_schools[k] = change_school
+
+    return change_match_students, change_match_schools
+
+def total_unmatched_matched(change_match_students, change_match_schools):
+    '''
+    Function that computes the total number of students that went from being unmatched
+    to being matched while k increases of value
+    '''
+    num_students_change = {}
+    num_schools_change = {}
+
+    for k, changes in change_match_students.items():
+        num_students_change[k] = sum(map(lambda x : x == 1, changes))
+    
+    for k, changes in change_match_schools.items():
+        num_schools_change[k] = sum(map(lambda x : x == 1, changes))
+    
+    return num_students_change, num_schools_change
 
 def originalRank(student_M, school_M, student_original_pref, school_original_pref):
     '''
@@ -388,4 +420,60 @@ def originalRank(student_M, school_M, student_original_pref, school_original_pre
                 school_ranks[k][school] = prefs.index(spouses[school]) + 1   
                 
     return student_ranks, school_ranks
+
+def change_original_rank(Delta, k , additions, student_ranks, school_ranks):
+    '''
+    Function that computes how many students obtain an actual better partner
+    '''
+    change_rank_students = {}
+    change_rank_schools = {}
+
+    for j in range(additions):
+    
+        k_prev = k
+        k = k + Delta
+        change  = []
+
+        for i in range(len(student_ranks[k])):
+            rank_prev = student_ranks[k_prev][i]
+            rank_new = student_ranks[k][i]
+            if rank_prev > rank_new:
+                change.append(1)
+            elif rank_prev < rank_new: 
+                change.append(2)
+            else: 
+                change.append(0)
+        
+        change_rank_students[k] = change
+
+        change_school  = []
+
+        for i in range(len(school_ranks[k])):
+            rank_prev = school_ranks[k_prev][i]
+            rank_new = school_ranks[k][i]
+            if rank_prev > rank_new:
+                change_school.append(1)
+            elif rank_prev < rank_new: 
+                change_school.append(2)
+            else: 
+                change_school.append(0)
+        
+        change_rank_schools[k] = change_school
+
+    return change_rank_students, change_rank_schools
+
+
+def improve_original_rank(change_rank_students, change_rank_schools, num_students_change, num_schools_change):
+
+    pct_students_improve = {}
+    pct_schools_improve = {}
+
+    for k, changes in change_rank_students.items():
+        pct_students_improve[k] = sum(map(lambda x : x == 1, changes))/num_students_change[k]
+    
+    for k, changes in change_rank_schools.items():
+        pct_schools_improve[k] = sum(map(lambda x : x == 1, changes))/num_schools_change[k]
+
+    return pct_students_improve, pct_schools_improve
+
 
