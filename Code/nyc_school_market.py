@@ -84,96 +84,68 @@ def increase_preference_sublist(delta, student_preferences, school_preferences, 
     
     return student_preferences_2, school_preferences_2
 
-
-def gale_shapley_modified(n_men, n_women, men_preferences, women_preferences):
+def gale_shapley_modified(n_students, n_schools, student_preferences, school_preferences):
     '''
     Computes the stable match of a market using the DA algorithm by Gale and Shapley.
     INPUTS:
-        n_men: number of men in the market
-        n_women: number of women in the market
-        men_preferences: dictionary with preference lists for men
-        women_preferences: dictionary with preference lists for women
+        n_students: number of students in the market
+        n_schools: number of schools in the market
+        student_preferences: dictionary with preference lists for students
+        school_preferences: dictionary with preference lists for schools
     OUTPUT:
-        man_spouse: list with men stable partner 
-        woman_spouse: list with women stable partner
+        student_match: list with students stable partner 
+        school_match: list with schools stable partner
     '''
-    # Initially, all n men are unmarried
-    unmarried_men = list(range(n_men))
-    # None of the men has a spouse yet, we denote this by the value None
-    man_spouse = [None] * n_men                      
-    # None of the women has a spouse yet, we denote this by the value None
-    woman_spouse = [None] * n_women                     
-    # Each man made 0 proposals, which means that 
-    # his next proposal will be to the woman number 0 in his list
-    next_man_choice = [0] * n_men   
 
-    size_preferences = len(men_preferences[0])                    
-    # While there exists at least one unmarried man or there are men with possible proposals still available:
-    while unmarried_men:
-        # Pick an arbitrary unmarried man
-        he = unmarried_men[0]
+    unmatched_students = list(range(n_students))
 
+    student_match = [None] * n_students
+    school_match = [None] * n_schools
+
+    next_student_choice = [0] * n_students
+
+    size_preferences = len(student_preferences[0])
+
+    while unmatched_students: 
+        student = unmatched_students[0]
         to_break = 0
-        while next_man_choice[he]>=size_preferences and to_break==0:
-            if len(unmarried_men)>1:
-                unmarried_men.pop(0)
-                he = unmarried_men[0]
-            else:
+        
+        while next_student_choice[student]>=size_preferences and to_break == 0:
+            if len(unmatched_students)>1:  
+                unmatched_students.pop(0)
+                student = unmatched_students[0]
+            else: 
                 to_break = 1
-        if to_break == 1:
+        if to_break == 1: 
             break
 
-        # Store his ranking in this variable for convenience
-        his_preferences = men_preferences[he]       
-        # Find a woman to propose to
-        she = his_preferences[next_man_choice[he]]
-        # Store her ranking in this variable for convenience
-        her_preferences = women_preferences[she]
-        # Find the present husband of the selected woman (it might be None)
-        current_husband = woman_spouse[she]
- 
-        # Now "he" proposes to "she". 
-        # Decide whether "she" accepts, and update the following fields
-        # 1. manSpouse
-        # 2. womanSpouse
-        # 3. unmarriedMen
-        # 4. nextManChoice
-        if current_husband == None:
-          #No Husband case
-          #"She" accepts any proposal
-          woman_spouse[she] = he
-          man_spouse[he] = she
-          #"His" nextchoice is the next woman
-          #in the hisPreferences list
-          next_man_choice[he] = next_man_choice[he] + 1
-          #Delete "him" from the 
-          #Unmarried list
-          unmarried_men.pop(0)
+        student_pref  = student_preferences[student]
+        school = student_pref[next_student_choice[student]]
+        school_pref = school_preferences[school]
+        school_current_match = school_match[school]
+
+        if school_current_match == None: 
+            school_match[school] = student
+            student_match[student] = school
+            next_student_choice[student] = next_student_choice[student] + 1 
+            unmatched_students.pop(0)
 
         else:
-          #Husband exists
-          #Check the preferences of the 
-          #current husband and that of the proposed man's
-          current_index = her_preferences.index(current_husband)
-          his_index = her_preferences.index(he)
-          #Accept the proposal if 
-          #"he" has higher preference in the herPreference list
-          if current_index > his_index:
-             #New stable match is found for "her"
-             woman_spouse[she] = he
-             man_spouse[he] = she
-             next_man_choice[he] = next_man_choice[he] + 1
-             #Pop the newly wed husband
-             unmarried_men.pop(0)
-             #Now the previous husband is unmarried add
-             #him to the unmarried list
-             unmarried_men.insert(0,current_husband)
-             man_spouse[current_husband] = None
+            current_index = school_pref.index(school_current_match)
+            candidate_index = school_pref.index(student)
 
-          else:
-             next_man_choice[he] = next_man_choice[he] + 1
+            if candidate_index < current_index: 
+                school_match[school] = student
+                student_match[student] = school
+                next_student_choice[student] = next_student_choice[student] + 1
+                unmatched_students.pop(0)
+                unmatched_students.insert(0, school_current_match)
+                student_match[school_current_match] = None
 
-    return man_spouse, woman_spouse
+            else:
+                next_student_choice[student] = next_student_choice[student] + 1
+
+    return student_match, school_match
 
 def rank_partners(student_spouse, school_spouse, student_preferences, school_preferences):
     '''
@@ -347,8 +319,8 @@ def unmatched_matched(Delta, k , additions, student_M, school_M):
     '''
     Function that tells us how many students went from being unmatched to being match when k increases
     '''
-    change_match_students = {}
-    change_match_schools = {}
+    unmatched_match_students = {}
+    unmatched_match_schools = {}
 
     for j in range(additions):
     
@@ -362,7 +334,7 @@ def unmatched_matched(Delta, k , additions, student_M, school_M):
             else: 
                 change.append(0)
         
-        change_match_students[k] = change
+        unmatched_match_students[k] = change
 
         change_school  = []
 
@@ -372,25 +344,25 @@ def unmatched_matched(Delta, k , additions, student_M, school_M):
             else: 
                 change_school.append(0)
         
-        change_match_schools[k] = change_school
+        unmatched_match_schools[k] = change_school
 
-    return change_match_students, change_match_schools
+    return unmatched_match_students, unmatched_match_schools
 
-def total_unmatched_matched(change_match_students, change_match_schools):
+def total_unmatched_matched(unmatched_match_students, unmatched_match_schools):
     '''
     Computes the total number of students that went from being unmatched
     to being matched while k increases of value
     '''
-    num_students_change = {}
-    num_schools_change = {}
+    num_students_unmatched_matched = {}
+    num_schools_unmatched_matched = {}
 
-    for k, changes in change_match_students.items():
-        num_students_change[k] = sum(map(lambda x : x == 1, changes))
+    for k, changes in unmatched_match_students.items():
+        num_students_unmatched_matched[k] = sum(map(lambda x : x == 1, changes))
     
-    for k, changes in change_match_schools.items():
-        num_schools_change[k] = sum(map(lambda x : x == 1, changes))
+    for k, changes in unmatched_match_schools.items():
+        num_schools_unmatched_matched[k] = sum(map(lambda x : x == 1, changes))
     
-    return num_students_change, num_schools_change
+    return num_students_unmatched_matched, num_schools_unmatched_matched
 
 def original_rank(student_M, school_M, student_original_pref, school_original_pref):
     '''
