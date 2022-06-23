@@ -3,7 +3,7 @@ from unittest import skip
 import numpy as np
 import random as ra
 
-def MarriageMarketPreferenceLists(n_students, n_schools):
+def marriage_market_preference_lists(n_students, n_schools):
     '''
     Function that generates a random bipartite matching market instance between students and 
     schools with complete preference lists on the opposite side
@@ -28,7 +28,7 @@ def MarriageMarketPreferenceLists(n_students, n_schools):
 
     return student_full_preferences, school_full_preferences
 
-def RestrictedMarket(d_student, student_full_preferences, school_full_preferences):
+def restricted_market(d_student, student_full_preferences, school_full_preferences):
     '''
     Function that samples a sublist of preferences from the full preference lists of agents in the 
     random matching market.
@@ -60,7 +60,7 @@ def RestrictedMarket(d_student, student_full_preferences, school_full_preference
     
     return student_preferences, school_preferences
 
-def increasePreferenceSublist(delta, student_preferences, school_preferences, student_full_preferences, school_full_preferences):
+def increase_preference_sublist(delta, student_preferences, school_preferences, student_full_preferences, school_full_preferences):
     '''
     Function that increases the previously sampled sublist of preferences. 
     Inputs
@@ -85,9 +85,9 @@ def increasePreferenceSublist(delta, student_preferences, school_preferences, st
     return student_preferences_2, school_preferences_2
 
 
-def galeShapleyModified(n_men, n_women, men_preferences, women_preferences):
+def gale_shapley_modified(n_men, n_women, men_preferences, women_preferences):
     '''
-    Function that computes the stable match of a market using the DA algorithm by Gale and Shapley.
+    Computes the stable match of a market using the DA algorithm by Gale and Shapley.
     INPUTS:
         n_men: number of men in the market
         n_women: number of women in the market
@@ -175,9 +175,9 @@ def galeShapleyModified(n_men, n_women, men_preferences, women_preferences):
 
     return man_spouse, woman_spouse
 
-def rankPartners(student_spouse, school_spouse, student_preferences, school_preferences):
+def rank_partners(student_spouse, school_spouse, student_preferences, school_preferences):
     '''
-    Function that computes the rank of the partner of the agents on the stable match outcome
+    Computes the rank of the partner of the agents on the stable match outcome
     '''    
     student_ranks = [None]*len(student_preferences.keys())
     school_ranks = [None]*len(school_preferences.keys())
@@ -201,9 +201,9 @@ def rankPartners(student_spouse, school_spouse, student_preferences, school_pref
 
     return student_ranks, school_ranks
 
-def averageRankPartners(student_spouse, school_spouse, student_preferences, school_preferences):
+def average_rank_partners(student_spouse, school_spouse, student_preferences, school_preferences):
     '''
-    Function that computes the average rank of partner for the agents on the stable outcome
+    Computes the average rank of partner for the agents on the stable outcome
     '''    
     student_ranks = {}
     school_ranks = {}
@@ -230,12 +230,12 @@ def averageRankPartners(student_spouse, school_spouse, student_preferences, scho
 
     return student_average_rank, school_average_rank
 
-def simulationMatchingMarket(n_students, n_schools, preferences_size, iterations):
+def simulation_matching_market(n_students, n_schools, preferences_size, iterations):
     '''
-    Function that simulates a random matching market with different sizes of preferences
+    Simulates a random matching market with different sizes of preferences
     '''
 
-    student_f_pref, school_f_pref = MarriageMarketPreferenceLists(n_students, n_schools)
+    student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
 
     student_average_rank = {}
     school_average_rank = {}
@@ -253,9 +253,9 @@ def simulationMatchingMarket(n_students, n_schools, preferences_size, iterations
         for list_size in preferences_size:
             print('simulating with students preference list size: ' + str(list_size))
 
-            student_pre[list_size], school_pre[list_size] = RestrictedMarket(list_size, student_f_pref, school_f_pref)
-            student_sp[list_size], school_sp[list_size] = galeShapleyModified(n_students, n_schools, student_pre[list_size], school_pre[list_size])
-            student_r, school_r = averageRankPartners(student_sp[list_size], school_sp[list_size], student_pre[list_size], school_pre[list_size])
+            student_pre[list_size], school_pre[list_size] = restricted_market(list_size, student_f_pref, school_f_pref)
+            student_sp[list_size], school_sp[list_size] = gale_shapley_modified(n_students, n_schools, student_pre[list_size], school_pre[list_size])
+            student_r, school_r = average_rank_partners(student_sp[list_size], school_sp[list_size], student_pre[list_size], school_pre[list_size])
             student_rank[list_size].append(student_r)
             school_rank[list_size].append(school_r) 
         student_average_rank[list_size] = 1/iterations * sum(student_rank[list_size])
@@ -263,36 +263,36 @@ def simulationMatchingMarket(n_students, n_schools, preferences_size, iterations
 
     return student_f_pref, student_average_rank, school_f_pref, school_average_rank
     
-def simulationMatchingIncreasePreferences(Delta, k, n_students, n_schools, additions):
+def simulation_matching_increase_preferences(Delta, k, n_students, n_schools, additions):
     '''
-    Function to simulate the matching outcome under diferent preference list sizes where we only add new preferences.
+    Simulates the matching outcome under diferent preference list sizes where we only add new preferences.
     '''
-    student_f_pref, school_f_pref = MarriageMarketPreferenceLists(n_students, n_schools)
+    student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
 
     student_pre = {}
     school_pre = {}
     student_M = {}
     school_M = {}
-    student_M_rank = {}
-    school_M_rank = {}
+    #student_M_rank = {}
+    #school_M_rank = {}
     
-    student_pre[k], school_pre[k] = RestrictedMarket(k, student_f_pref, school_f_pref)
-    student_M[k], school_M[k] = galeShapleyModified(n_students, n_schools, student_pre[k], school_pre[k])
-    student_M_rank[k], school_M_rank[k] = rankPartners(student_M[k], school_M[k], student_pre[k], school_pre[k])
+    student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
+    student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+    #student_M_rank[k], school_M_rank[k] = rank_partners(student_M[k], school_M[k], student_pre[k], school_pre[k])
     
     for j in range(1,additions+1):
-        print('working on addition: ' + str(j))
         k_prev = k
         k = k + Delta
-        student_pre[k], school_pre[k] = increasePreferenceSublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
-        student_M[k], school_M[k] = galeShapleyModified(n_students, n_schools, student_pre[k], school_pre[k])
-        student_M_rank[k], school_M_rank[k] = rankPartners(student_M[k], school_M[k], student_pre[k], school_pre[k])
+        print('working on sublist size: ' + str(k))
+        student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
+        student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+        #student_M_rank[k], school_M_rank[k] = rank_partners(student_M[k], school_M[k], student_pre[k], school_pre[k])
 
-    return student_M, school_M, student_M_rank, school_M_rank, student_f_pref, school_f_pref
+    return student_M, school_M, student_f_pref, school_f_pref
 
-def differencesMatch(Delta, k , additions, student_M, school_M):
+def differences_match(Delta, k , additions, student_M, school_M):
     '''
-    Function that computes the change in stable outcome
+    Computes the change in stable outcome
     '''
     change_match_students = {}
     change_match_schools = {}
@@ -328,9 +328,9 @@ def differencesMatch(Delta, k , additions, student_M, school_M):
     return change_match_students, change_match_schools
 
 
-def totalDifferencesMatch(change_match_students, change_match_schools):
+def total_differences_match(change_match_students, change_match_schools):
     '''
-    Function that computes total change on the stable outcomes
+    Computes total change on the stable outcomes
     '''
     num_students_change = {}
     num_schools_change = {}
@@ -378,7 +378,7 @@ def unmatched_matched(Delta, k , additions, student_M, school_M):
 
 def total_unmatched_matched(change_match_students, change_match_schools):
     '''
-    Function that computes the total number of students that went from being unmatched
+    Computes the total number of students that went from being unmatched
     to being matched while k increases of value
     '''
     num_students_change = {}
@@ -392,9 +392,9 @@ def total_unmatched_matched(change_match_students, change_match_schools):
     
     return num_students_change, num_schools_change
 
-def originalRank(student_M, school_M, student_original_pref, school_original_pref):
+def original_rank(student_M, school_M, student_original_pref, school_original_pref):
     '''
-    Function that computes the rank of partner according to the full list of preferences for each agent
+    Computes the rank of partner according to the full list of preferences for each agent
     '''
 
     student_ranks = {k: [None]*len(s) for k, s in student_M.items()}
@@ -423,7 +423,7 @@ def originalRank(student_M, school_M, student_original_pref, school_original_pre
 
 def change_original_rank(Delta, k , additions, student_ranks, school_ranks):
     '''
-    Function that computes how many students obtain an actual better partner
+    Computes how many students obtain an actual better partner
     '''
     change_rank_students = {}
     change_rank_schools = {}
@@ -464,7 +464,10 @@ def change_original_rank(Delta, k , additions, student_ranks, school_ranks):
 
 
 def improve_original_rank(change_rank_students, change_rank_schools, num_students_change, num_schools_change):
-
+    '''
+    Gives the percentage of students that improved partner on the original list when changing partner 
+    between sublist sizes
+    '''
     pct_students_improve = {}
     pct_schools_improve = {}
 
@@ -482,4 +485,36 @@ def improve_original_rank(change_rank_students, change_rank_schools, num_student
 
     return pct_students_improve, pct_schools_improve
 
+
+def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, iterations):
+    '''
+    Monte Carlo simulations of the percentage of students that improved partner between stable outcomes
+    '''
+    
+    beg = sublist + Delta
+    end = sublist+Delta*additions + Delta
+    average_num_students_change = {x : 0 for x in range(beg, end, Delta)}
+    average_num_students_imp = {x : 0 for x in range(beg, end, Delta)}
+
+
+    for i in range(iterations):
+        print('Working on iteration: ' + str(i))
+
+        student_Match, school_Match, student_original_preferences, school_original_preferences = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions)
+
+        student_changes, school_changes = differences_match(Delta, sublist, additions, student_Match, school_Match)
+        num_students_change, num_schools_change = total_differences_match(student_changes, school_changes)
+
+        student_original_ranks, school_original_ranks = original_rank(student_Match, school_Match, student_original_preferences, school_original_preferences)    
+        student_changes_orank, school_changes_orank = change_original_rank(Delta, sublist, additions, student_original_ranks, school_original_ranks)
+        num_students_imp, num_schools_imp = improve_original_rank(student_changes_orank, school_changes_orank, num_students_change, num_schools_change)
+
+        for size, value in num_students_change.items():
+            average_num_students_change[size] = average_num_students_change[size] + value/iterations
+        
+        for size, value in num_students_imp.items():
+            average_num_students_imp[size] = average_num_students_imp[size] + value/iterations
+        
+        
+    return average_num_students_change, average_num_students_imp
 
