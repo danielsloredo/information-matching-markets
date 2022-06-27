@@ -7,6 +7,7 @@ import nyc_school_market as nyc
 import matplotlib.pyplot as plt
 import json
 import ast
+import sys
 
 '''
 ################################################################################
@@ -527,7 +528,7 @@ plt.xticks([r for r in range(len(x2))], ['11', '12', '13', '14', '15', '16', '17
 #plt.legend(loc="upper left")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/improvement_rank_match.png')
 '''
-
+'''
 ################################################################################
 # MC simulations of improvement of match when increasing sublist size
 # Complete list of preferences, additions are sampled from the complete list
@@ -569,6 +570,46 @@ plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("|Students with better match|")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/average_number_improvement_match_long10.png')
+'''
+import optim_nyc as onyc
+import time
+np.set_printoptions(threshold=sys.maxsize)
+
+start_time = time.time()
+
+student_f_pref, school_f_pref = onyc.marriage_market_preference_lists(1000, 1001)
+
+#print(student_f_pref)
+#print(school_f_pref)
+
+print("Original Market --- %s seconds ---" % (time.time() - start_time))
+
+k=10
+additions = 900
+Delta = 1
+student_pre = {}
+school_pre = {}
+student_M = {}
+school_M = {}
+
+student_pre[k], school_pre[k] = onyc.restricted_market(k, student_f_pref, school_f_pref)
+#print(student_pre)
+#print(school_pre)
+print("Restricted Market --- %s seconds ---" % (time.time() - start_time))
+
+student_M[k], school_M[k] = onyc.gale_shapley_modified(1000, 1001, student_pre[k], school_pre[k])
+print("GS --- %s seconds ---" % (time.time() - start_time))
+
+
+for j in range(1,additions+1):
+    k_prev = k
+    k = k + Delta
+    print('working on sublist size: ' + str(k))
+    student_pre[k], school_pre[k] = onyc.increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
+    print("Increase --- %s seconds ---" % (time.time() - start_time))
+    student_M[k], school_M[k] = onyc.gale_shapley_modified(1000, 1001, student_pre[k], school_pre[k])
+    print("GS --- %s seconds ---" % (time.time() - start_time))
+
 
 
 print('code succesfull')
