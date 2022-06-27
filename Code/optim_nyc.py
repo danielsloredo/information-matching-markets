@@ -164,3 +164,246 @@ def gale_shapley_modified(n_students, n_schools, student_preferences, school_pre
                 next_student_choice[student] = next_student_choice[student] + 1
 
     return student_match, school_match
+
+
+def simulation_matching_increase_preferences(Delta, k, n_students, n_schools, additions):
+    '''
+    Simulates the matching outcome under diferent preference list sizes where we only add new preferences.
+    '''
+    student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
+
+    student_pre = {}
+    school_pre = {}
+    student_M = {}
+    school_M = {}
+    
+    student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
+    student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+    
+    for j in range(1,additions+1):
+        k_prev = k
+        k = k + Delta
+        print('working on sublist size: ' + str(k))
+        student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
+        student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+        
+    return student_M, school_M, student_f_pref, school_f_pref
+
+def differences_match(Delta, k , additions, student_M, school_M):
+    '''
+    Computes the change in stable outcome
+    '''
+    change_match_students = {}
+    change_match_schools = {}
+
+    for j in range(additions):
+    
+        k_prev = k
+        k = k + Delta
+        change  = []
+
+        for i in range(student_M[k].shape[0]):
+            match_prev = student_M[k_prev][i,1]
+            match_new = student_M[k][i,1]
+            if (match_prev != match_new):
+                change.append(1)
+            else: 
+                change.append(0)
+        
+        change_match_students[k] = change
+
+        change_school  = []
+
+        for i in range(school_M[k].shape[0]):
+            match_new = school_M[k][i, 1]
+            match_prev = school_M[k_prev][i, 1]
+            if (match_prev != match_new):
+                change_school.append(1)
+            else: 
+                change_school.append(0)
+        
+        change_match_schools[k] = change_school
+
+    return change_match_students, change_match_schools
+
+
+def total_differences_match(change_match_students, change_match_schools):
+    '''
+    Computes total change on the stable outcomes
+    '''
+    num_students_change = {}
+    num_schools_change = {}
+
+    for k, changes in change_match_students.items():
+        num_students_change[k] = sum(map(lambda x : x == 1, changes))
+    
+    for k, changes in change_match_schools.items():
+        num_schools_change[k] = sum(map(lambda x : x == 1, changes))
+    
+    return num_students_change, num_schools_change
+
+def unmatched_matched(Delta, k , additions, student_M, school_M):
+    '''
+    Function that tells us how many students went from being unmatched to being match when k increases
+    '''
+    unmatched_match_students = {}
+    unmatched_match_schools = {}
+
+    for j in range(additions):
+    
+        k_prev = k
+        k = k + Delta
+        change  = []
+
+        for i in range(student_M[k].shape[0]):
+            if (student_M[k][i, 1] != -9999) and (student_M[k_prev][i,1] == -9999): 
+                change.append(1)
+            else: 
+                change.append(0)
+        
+        unmatched_match_students[k] = change
+
+        change_school  = []
+
+        for i in range(school_M[k].shape[0]):
+            if (school_M[k][i,1] != -9999) and (school_M[k_prev][i,1] == -9999):
+                change_school.append(1)
+            else: 
+                change_school.append(0)
+        
+        unmatched_match_schools[k] = change_school
+
+    return unmatched_match_students, unmatched_match_schools
+
+def total_unmatched_matched(unmatched_match_students, unmatched_match_schools):
+    '''
+    Computes the total number of students that went from being unmatched
+    to being matched while k increases of value
+    '''
+    num_students_unmatched_matched = {}
+    num_schools_unmatched_matched = {}
+
+    for k, changes in unmatched_match_students.items():
+        num_students_unmatched_matched[k] = sum(map(lambda x : x == 1, changes))
+    
+    for k, changes in unmatched_match_schools.items():
+        num_schools_unmatched_matched[k] = sum(map(lambda x : x == 1, changes))
+    
+    return num_students_unmatched_matched, num_schools_unmatched_matched
+
+def change_original_rank(Delta, k , additions, student_M, school_M):
+    '''
+    Computes how many students obtain an actual better partner
+    '''
+    change_rank_students = {}
+    change_rank_schools = {}
+
+    for j in range(additions):
+    
+        k_prev = k
+        k = k + Delta
+        change  = []
+
+        for i in range(student_M[k].shape[0]):
+            rank_prev = student_M[k_prev][i,0]
+            rank_new = student_M[k][i,0]
+            if rank_prev > rank_new:
+                change.append(1)
+            elif rank_prev < rank_new: 
+                change.append(2)
+            else: 
+                change.append(0)
+        
+        change_rank_students[k] = change
+
+        change_school  = []
+
+        for i in range(school_M[k].shape[0]):
+            rank_prev = school_M[k_prev][i,0]
+            rank_new = school_M[k][i,0]
+            if rank_prev > rank_new:
+                change_school.append(1)
+            elif rank_prev < rank_new: 
+                change_school.append(2)
+            else: 
+                change_school.append(0)
+        
+        change_rank_schools[k] = change_school
+
+    return change_rank_students, change_rank_schools
+
+
+def improve_original_rank(change_rank_students, change_rank_schools, num_students_change, num_schools_change):
+    '''
+    Gives the percentage of students that improved partner on the original list when changing partner 
+    between sublist sizes
+    '''
+    pct_students_improve = {}
+    pct_schools_improve = {}
+
+    for k, changes in change_rank_students.items():
+        if num_students_change[k] > 0: 
+            pct_students_improve[k] = sum(map(lambda x : x == 1, changes))/num_students_change[k]
+        else: 
+            pct_students_improve[k] = 0
+    
+    for k, changes in change_rank_schools.items():
+        if num_schools_change[k] > 0: 
+            pct_schools_improve[k] = sum(map(lambda x : x == 1, changes))/num_schools_change[k]
+        else: 
+            pct_schools_improve[k] = 0
+
+    return pct_students_improve, pct_schools_improve
+
+
+def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, iterations):
+    '''
+    Monte Carlo simulations of the percentage of students that improved partner between stable outcomes
+    '''
+    
+    beg = sublist + Delta
+    end = sublist+Delta*additions + Delta
+    average_num_students_change = {x : 0 for x in range(beg, end, Delta)}
+    average_num_students_unm_mat = {x : 0 for x in range(beg, end, Delta)}
+    average_num_students_imp = {x : 0 for x in range(beg, end, Delta)}
+    average_num_schools_change = {x : 0 for x in range(beg, end, Delta)}
+    average_num_schools_unm_mat = {x : 0 for x in range(beg, end, Delta)}
+    average_num_schools_imp = {x : 0 for x in range(beg, end, Delta)}
+
+
+    for i in range(iterations):
+        print('Working on iteration: ' + str(i))
+
+        student_Match, school_Match, student_original_preferences, school_original_preferences = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions)
+
+        student_changes, school_changes = differences_match(Delta, sublist, additions, student_Match, school_Match)
+        num_students_change, num_schools_change = total_differences_match(student_changes, school_changes)
+
+        unm_mat_students, unm_mat_schools = unmatched_matched(Delta, sublist, additions, student_Match, school_Match)
+        num_students_unm_mat, num_schools_unm_mat = total_unmatched_matched(unm_mat_students, unm_mat_schools)
+
+        
+        student_changes_orank, school_changes_orank = change_original_rank(Delta, sublist, additions, student_Match, school_Match)
+        num_students_imp, num_schools_imp = improve_original_rank(student_changes_orank, school_changes_orank, num_students_change, num_schools_change)
+
+        #Students
+        for size, value in num_students_change.items():
+            average_num_students_change[size] = average_num_students_change[size] + value/iterations
+        
+        for size, value in num_students_unm_mat.items():
+            average_num_students_unm_mat[size] = average_num_students_unm_mat[size] + value/iterations
+        
+        for size, value in num_students_imp.items():
+            average_num_students_imp[size] = average_num_students_imp[size] + value/iterations
+        #Schools
+        for size, value in num_schools_change.items():
+            average_num_schools_change[size] = average_num_schools_change[size] + value/iterations
+        
+        for size, value in num_schools_unm_mat.items():
+            average_num_schools_unm_mat[size] = average_num_schools_unm_mat[size] + value/iterations
+        
+        for size, value in num_schools_imp.items():
+            average_num_schools_imp[size] = average_num_schools_imp[size] + value/iterations
+        
+    return average_num_students_change, average_num_schools_change, average_num_students_unm_mat, average_num_schools_unm_mat, average_num_students_imp, average_num_schools_imp
+    
