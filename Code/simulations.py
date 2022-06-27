@@ -4,10 +4,13 @@ import unbalanced_matching as um
 import counselor_matching as cm
 import real_change_on_rank as rc
 import nyc_school_market as nyc
+import optim_nyc as onyc
 import matplotlib.pyplot as plt
 import json
 import ast
 import sys
+import time
+
 
 '''
 ################################################################################
@@ -571,8 +574,10 @@ plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("|Students with better match|")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures/average_number_improvement_match_long10.png')
 '''
-import optim_nyc as onyc
-import time
+'''
+#############################################################################################
+## Time tests for optimization
+#############################################################################################
 np.set_printoptions(threshold=sys.maxsize)
 
 start_time = time.time()
@@ -609,7 +614,71 @@ for j in range(1,additions+1):
     print("Increase --- %s seconds ---" % (time.time() - start_time))
     student_M[k], school_M[k] = onyc.gale_shapley_modified(1000, 1001, student_pre[k], school_pre[k])
     print("GS --- %s seconds ---" % (time.time() - start_time))
+'''
 
+################################################################################
+# MC simulations of improvement of match when increasing sublist size
+# Complete list of preferences, additions are sampled from the complete list
+################################################################################
+
+average_students_change, average_schools_change, average_students_unm_mat, average_schools_unm_mat, average_students_imp, average_schools_imp  = onyc.mc_simulations_improvement(1, 10, 990, 1000, 1001, 10)
+#print('mean number of students that change match')
+#print(average_students_change)
+#print('mean pct of students that improve match')
+#print(average_students_imp)
+
+
+#average_number_students_imp = {k: average_students_change[k]*average_students_imp[k] for k in average_students_change.keys()}
+
+barWidth = 0.25
+
+lists2 = sorted(average_students_change.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(24)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("M_k/M_{k-1}")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_edges_change_match_students.png')
+
+lists2 = sorted(average_students_imp.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(25)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("% Students with better match")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_improvement_rank_match_students.png')
+
+lists2 = sorted(average_students_unm_mat.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(26)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Students unmatched to matched|")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_number_students_unm_match.png')
+
+lists2 = sorted(average_schools_change.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(27)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("M_k/M_{k-1} for schools")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_edges_change_match_schools.png')
+
+lists2 = sorted(average_schools_imp.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(28)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("% Schools with better match")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_improvement_rank_match_schools.png')
+
+lists2 = sorted(average_schools_unm_mat.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(29)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Schools unmatched to matched|")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_number_schools_unm_match.png')
 
 
 print('code succesfull')
