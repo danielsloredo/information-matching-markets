@@ -362,7 +362,7 @@ def nash_welfare(student_M, school_M):
     for size, match in student_M.items():
         ranks = match[:, 0]
         utility = np.log(np.array(school_M[size].shape[0]-ranks[ranks!=-9999]))
-        nash_welfare_students[size] = np.sum(utility) * 1/match.shape[0]
+        nash_welfare_students[size] = np.sum(utility)
 
     return nash_welfare_students
 
