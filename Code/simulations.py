@@ -621,14 +621,7 @@ for j in range(1,additions+1):
 # Complete list of preferences, additions are sampled from the complete list
 ################################################################################
 
-average_students_change, average_schools_change, average_students_unm_mat, average_schools_unm_mat, average_students_imp, average_schools_imp  = onyc.mc_simulations_improvement(1, 10, 990, 1000, 1001, 10)
-#print('mean number of students that change match')
-#print(average_students_change)
-#print('mean pct of students that improve match')
-#print(average_students_imp)
-
-
-#average_number_students_imp = {k: average_students_change[k]*average_students_imp[k] for k in average_students_change.keys()}
+average_students_change, average_schools_change, average_students_unm_mat, average_schools_unm_mat, average_students_imp, average_schools_imp, average_nash_welfare  = onyc.mc_simulations_improvement(1, 10, 990, 1000, 1001, 10)
 
 barWidth = 0.25
 
@@ -680,5 +673,78 @@ plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("|Schools unmatched to matched|")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_number_schools_unm_match.png')
 
+lists2 = sorted(average_nash_welfare.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(30)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/average_nash_social_welfare.png')
+
+k_sample = [size for size in range(11,41)]
+
+sample_students_change = {k: average_students_change[k] for k in average_students_change.keys() & k_sample}
+sample_students_imp = {k: average_students_imp[k] for k in average_students_imp.keys() & k_sample}
+sample_students_unm_mat = {k: average_students_unm_mat[k] for k in average_students_unm_mat.keys() & k_sample}
+sample_schools_change = {k: average_schools_change[k] for k in average_schools_change.keys() & k_sample}
+sample_schools_imp = {k: average_schools_imp[k] for k in average_schools_imp.keys() & k_sample}
+sample_schools_unm_mat = {k: average_schools_unm_mat[k] for k in average_schools_unm_mat.keys() & k_sample}
+sample_nash_welfare = {k: average_nash_welfare[k] for k in average_nash_welfare.keys() & k_sample}
+
+lists2 = sorted(sample_students_change.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(31)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("M_k/M_{k-1}")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/subset_edges_change_match_students.png')
+
+lists2 = sorted(sample_students_imp.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(32)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("% Students with better match")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/subset_improvement_rank_match_students.png')
+
+lists2 = sorted(sample_students_unm_mat.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(33)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Students unmatched to matched|")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/subset_number_students_unm_match.png')
+
+lists2 = sorted(sample_schools_change.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(34)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("M_k/M_{k-1} for schools")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/subset_edges_change_match_schools.png')
+
+lists2 = sorted(sample_schools_imp.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(35)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("% Schools with better match")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/subset_improvement_rank_match_schools.png')
+
+lists2 = sorted(sample_schools_unm_mat.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(36)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("|Schools unmatched to matched|")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/subset_number_schools_unm_match.png')
+
+lists2 = sorted(sample_nash_welfare.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(37)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/subset_nash_social_welfare.png')
 
 print('code succesfull')

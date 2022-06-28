@@ -355,6 +355,17 @@ def improve_original_rank(change_rank_students, change_rank_schools, num_student
 
     return pct_students_improve, pct_schools_improve
 
+def nash_welfare(student_M, school_M): 
+    
+    nash_welfare_students = {}
+
+    for size, match in student_M.items():
+        ranks = match[:, 0]
+        utility = np.log(np.array(school_M[size].shape[0]-ranks[ranks!=-9999]))
+        nash_welfare_students[size] = np.sum(utility) * 1/match.shape[0]
+
+    return nash_welfare_students
+
 
 def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, iterations):
     '''
@@ -369,6 +380,7 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     average_num_schools_change = {x : 0 for x in range(beg, end, Delta)}
     average_num_schools_unm_mat = {x : 0 for x in range(beg, end, Delta)}
     average_num_schools_imp = {x : 0 for x in range(beg, end, Delta)}
+    average_nash_welfare_students = {x : 0 for x in range(sublist, end, Delta)}
 
 
     for i in range(iterations):
@@ -385,6 +397,8 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
         
         student_changes_orank, school_changes_orank = change_original_rank(Delta, sublist, additions, student_Match, school_Match)
         num_students_imp, num_schools_imp = improve_original_rank(student_changes_orank, school_changes_orank, num_students_change, num_schools_change)
+
+        nash_welfare_students = nash_welfare(student_Match, school_Match)
 
         #Students
         for size, value in num_students_change.items():
@@ -404,6 +418,9 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
         
         for size, value in num_schools_imp.items():
             average_num_schools_imp[size] = average_num_schools_imp[size] + value/iterations
+
+        for size, value in nash_welfare_students.items():
+            average_nash_welfare_students[size] = average_nash_welfare_students[size] + value/iterations
         
-    return average_num_students_change, average_num_schools_change, average_num_students_unm_mat, average_num_schools_unm_mat, average_num_students_imp, average_num_schools_imp
+    return average_num_students_change, average_num_schools_change, average_num_students_unm_mat, average_num_schools_unm_mat, average_num_students_imp, average_num_schools_imp, average_nash_welfare_students
     
