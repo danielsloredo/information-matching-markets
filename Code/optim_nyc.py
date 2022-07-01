@@ -135,31 +135,32 @@ def gale_shapley_modified(n_students, n_schools, student_preferences, school_pre
         if to_break == 1: 
             break
 
-        student_pref  = student_preferences[student]
-        sch = student_pref[next_student_choice[student]]
+        student_pref  = np.copy(student_preferences[student])
+        sch = np.copy(student_pref[next_student_choice[student]])
         school = sch[1]
-        school_pref = school_preferences[school]
-        school_current_match = school_match[school]
-
+        school_pref = np.copy(school_preferences[school])
+        school_current_match = np.copy(school_match[school])
+        
         if (school_current_match[1] == -9999): 
-            school_match[school] = school_pref[school_pref[:,1]==student][0]
+            stud = np.copy(school_pref[school_pref[:,1]==student][0])
+            school_match[school] = stud
             student_match[student] = sch
             next_student_choice[student] = next_student_choice[student] + 1 
             unmatched_students.pop(0)
-
+        
         else:
             current_index = school_current_match[0]
-            stud = school_pref[school_pref[:,1]==student][0]
+            stud = np.copy(school_pref[school_pref[:,1]==student][0])
             candidate_index = stud[0]
-
+        
             if candidate_index < current_index: 
+                student_match[school_current_match[1]] = [-9999,-9999]
                 school_match[school] = stud
                 student_match[student] = sch
                 next_student_choice[student] = next_student_choice[student] + 1
                 unmatched_students.pop(0)
                 unmatched_students.insert(0, school_current_match[1])
-                student_match[school_current_match[1]] = [-9999,-9999]
-
+        
             else:
                 next_student_choice[student] = next_student_choice[student] + 1
 
@@ -205,7 +206,7 @@ def differences_match(Delta, k , additions, student_M, school_M):
         for i in range(student_M[k].shape[0]):
             match_prev = student_M[k_prev][i,1]
             match_new = student_M[k][i,1]
-            if (match_prev != match_new):
+            if (match_prev != match_new) and (match_new != -9999):
                 change.append(1)
             else: 
                 change.append(0)
@@ -217,7 +218,7 @@ def differences_match(Delta, k , additions, student_M, school_M):
         for i in range(school_M[k].shape[0]):
             match_new = school_M[k][i, 1]
             match_prev = school_M[k_prev][i, 1]
-            if (match_prev != match_new):
+            if (match_prev != match_new) and (match_new != -9999):
                 change_school.append(1)
             else: 
                 change_school.append(0)
