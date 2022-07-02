@@ -361,11 +361,45 @@ def nash_welfare(student_M, school_M):
     nash_welfare_students = {}
 
     for size, match in student_M.items():
-        ranks = match[:, 0]
-        utility = np.log(np.array(school_M[size].shape[0]-ranks[ranks!=-9999]))
-        nash_welfare_students[size] = np.sum(utility)
+        ranks = np.copy(match[:, 0])
+        utility = np.array(school_M[size].shape[0]+2-ranks[ranks!=-9999], dtype=float)
+        nash_welfare_students[size] = np.power(utility.prod(),(1/match.shape[0]))
+    
+    nash_welfare_schools = {}
 
-    return nash_welfare_students
+    for size, match in school_M.items():
+        ranks = match[:, 0]
+        utility = np.array(student_M[size].shape[0]+2-ranks[ranks!=-9999], dtype=float)
+        nash_welfare_schools[size] = np.power(utility.prod(),(1/match.shape[0]))
+
+    return nash_welfare_students, nash_welfare_schools
+
+def average_rank_match(student_M, school_M):
+
+    oranks_students = {} 
+    oranks_schools = {}
+
+    average_oranks_students = {} 
+    average_oranks_schools = {}
+
+
+    for size, match in student_M.items():
+        ranks = np.copy(match[:,0])
+        ranks[ranks == -9999] =  school_M[size].shape[0] + 1
+        ranks[:] += 1
+        oranks_students[size] = ranks.tolist()
+        average_oranks_students[size] = np.mean(ranks)
+    
+    for size, match in school_M.items():
+        ranks = np.copy(match[:,0])
+        ranks[ranks == -9999] =  student_M[size].shape[0] + 1
+        ranks[:] += 1
+        oranks_schools[size] = ranks.tolist()
+        average_oranks_schools[size] = np.mean(ranks)
+
+    return average_oranks_students, average_oranks_schools, oranks_students, oranks_schools
+
+
 
 
 def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, iterations):
@@ -382,6 +416,12 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     average_num_schools_unm_mat = {x : 0 for x in range(beg, end, Delta)}
     average_num_schools_imp = {x : 0 for x in range(beg, end, Delta)}
     average_nash_welfare_students = {x : 0 for x in range(sublist, end, Delta)}
+    average_nash_welfare_schools = {x : 0 for x in range(sublist, end, Delta)}
+
+    average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
+    average_oranks_schools = {x : 0 for x in range(sublist, end, Delta)}
+    ranks_students = {x : [] for x in range(sublist, end, Delta)}
+    ranks_schools = {x : [] for x in range(sublist, end, Delta)}
 
 
     for i in range(iterations):
@@ -399,29 +439,50 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
         student_changes_orank, school_changes_orank = change_original_rank(Delta, sublist, additions, student_Match, school_Match)
         num_students_imp, num_schools_imp = improve_original_rank(student_changes_orank, school_changes_orank, num_students_change, num_schools_change)
 
-        nash_welfare_students = nash_welfare(student_Match, school_Match)
+        nash_welfare_students, nash_welfare_schools = nash_welfare(student_Match, school_Match)
+        mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools = average_rank_match(student_Match, school_Match)
 
         #Students
         for size, value in num_students_change.items():
-            average_num_students_change[size] = average_num_students_change[size] + value/iterations
+            average_num_students_change[size] += value/iterations
         
         for size, value in num_students_unm_mat.items():
-            average_num_students_unm_mat[size] = average_num_students_unm_mat[size] + value/iterations
+            average_num_students_unm_mat[size] += value/iterations
         
         for size, value in num_students_imp.items():
-            average_num_students_imp[size] = average_num_students_imp[size] + value/iterations
-        #Schools
-        for size, value in num_schools_change.items():
-            average_num_schools_change[size] = average_num_schools_change[size] + value/iterations
-        
-        for size, value in num_schools_unm_mat.items():
-            average_num_schools_unm_mat[size] = average_num_schools_unm_mat[size] + value/iterations
-        
-        for size, value in num_schools_imp.items():
-            average_num_schools_imp[size] = average_num_schools_imp[size] + value/iterations
+            average_num_students_imp[size] += value/iterations
 
         for size, value in nash_welfare_students.items():
-            average_nash_welfare_students[size] = average_nash_welfare_students[size] + value/iterations
+            average_nash_welfare_students[size] += value/iterations
+
+        for size, value in mean_original_ranks_students.items():
+            average_oranks_students[size] += value/iterations 
+
+        for size, ary in or_students.items():
+            ranks_students[size].extend(ary)
+
+        #Schools
+        for size, value in num_schools_change.items():
+            average_num_schools_change[size] += value/iterations
         
-    return average_num_students_change, average_num_schools_change, average_num_students_unm_mat, average_num_schools_unm_mat, average_num_students_imp, average_num_schools_imp, average_nash_welfare_students
+        for size, value in num_schools_unm_mat.items():
+            average_num_schools_unm_mat[size] += value/iterations
+        
+        for size, value in num_schools_imp.items():
+            average_num_schools_imp[size] += value/iterations
+
+        for size, value in nash_welfare_schools.items():
+            average_nash_welfare_schools[size] += value/iterations
+
+        for size, value in mean_original_ranks_schools.items():
+            average_oranks_schools[size] += value/iterations
+
+        for size, ary in or_schools.items():
+            ranks_schools[size].extend(ary)
+        
+        
+    return (average_num_students_change, average_num_schools_change, average_num_students_unm_mat, 
+    average_num_schools_unm_mat, average_num_students_imp, average_num_schools_imp, 
+    average_nash_welfare_students, average_nash_welfare_schools, average_oranks_students, average_oranks_schools,
+    ranks_students, ranks_schools)
     
