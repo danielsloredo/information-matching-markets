@@ -759,15 +759,12 @@ start = 3
 add = 97
 students = 100
 schools = 101
-repetitions = 40
+repetitions = 50
 
 (average_students_change, average_schools_change, average_students_unm_mat, 
     average_schools_unm_mat, average_students_imp, average_schools_imp, 
     average_nash_welfare_students, average_nash_welfare_schools, average_oranks_students, average_oranks_schools,
     ranks_students, ranks_schools)  = onyc.mc_simulations_improvement(delta, start, add, students, schools, repetitions)
-
-print(average_nash_welfare_students)
-print(average_nash_welfare_schools)
 
 
 for interval_start in range(start, start+add, 10):
@@ -783,6 +780,19 @@ for interval_start in range(start, start+add, 10):
     plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/100_101/density_ranks_students_'+str(interval_start)+'.png')
     plt.clf()
 
+
+for interval_start in range(start, start+add, 10):
+    for k in range(interval_start, interval_start + 10, 1):
+        if k < start+add:
+            ranks = np.array(ranks_schools[k])
+            sns.distplot(ranks, hist = False, kde = True,
+                        label = k)
+    plt.legend(title = 'Sub-list')
+    plt.title('Density Plot for Ranks')
+    plt.xlabel('Ranks')
+    plt.ylabel('Density')
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/100_101/density_ranks_schools_'+str(interval_start)+'.png')
+    plt.clf()
 
 
 barWidth = 0.25
