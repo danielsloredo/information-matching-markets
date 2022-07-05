@@ -236,7 +236,7 @@ def differences_match(Delta, k , additions, student_M, school_M):
     return change_match_students, change_match_schools
 
 
-def total_differences_match(change_match_students, change_match_schools, candidates):
+def total_differences_match(change_match_students, change_match_schools):
     '''
     Computes total change on the stable outcomes
     '''
@@ -382,21 +382,30 @@ def nash_welfare(student_M, school_M):
 
     return nash_welfare_students, nash_welfare_schools
 
-def average_rank_match(student_M, school_M):
+def average_rank_match(student_M, school_M, candidates):
 
     oranks_students = {} 
     oranks_schools = {}
 
-    average_oranks_students = {} 
+    average_oranks_students = {}
+    average_oranks_candidates = {} 
     average_oranks_schools = {}
 
+    random_key = ra.choice(list(student_M))
+    n_students = student_M[random_key].shape[0]
+    student_indexes = range(n_students)
+    non_candidates = list(set(student_indexes) - set(candidates))
 
     for size, match in student_M.items():
         ranks = np.copy(match[:,0])
         ranks[ranks == -9999] =  school_M[size].shape[0] + 1
         ranks[:] += 1
         oranks_students[size] = ranks.tolist()
-        average_oranks_students[size] = np.mean(ranks)
+        ranks_candidates = np.take(ranks, candidates)
+        ranks_students = np.take(ranks, non_candidates)
+        average_oranks_students[size] = np.mean(ranks_students)
+        average_oranks_candidates[size] = np.mean(ranks_candidates)
+
     
     for size, match in school_M.items():
         ranks = np.copy(match[:,0])
@@ -405,8 +414,7 @@ def average_rank_match(student_M, school_M):
         oranks_schools[size] = ranks.tolist()
         average_oranks_schools[size] = np.mean(ranks)
 
-    return average_oranks_students, average_oranks_schools, oranks_students, oranks_schools
-
+    return average_oranks_students, average_oranks_schools, oranks_students, oranks_schools, average_oranks_candidates
 
 
 
@@ -430,6 +438,8 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     ranks_students = {x : [] for x in range(sublist, end, Delta)}
     ranks_schools = {x : [] for x in range(sublist, end, Delta)}
 
+    average_oranks_candidates = {x : 0 for x in range(sublist, end, Delta)}
+
 
     for i in range(iterations):
         print('Working on iteration: ' + str(i))
@@ -437,7 +447,7 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
         student_Match, school_Match, candidates = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions, n_candidates)
 
         student_changes, school_changes = differences_match(Delta, sublist, additions, student_Match, school_Match)
-        num_students_change, num_schools_change = total_differences_match(student_changes, school_changes, candidates)
+        num_students_change, num_schools_change = total_differences_match(student_changes, school_changes)
 
         unm_mat_students, unm_mat_schools = unmatched_matched(Delta, sublist, additions, student_Match, school_Match)
         num_students_unm_mat, num_schools_unm_mat = total_unmatched_matched(unm_mat_students, unm_mat_schools)
@@ -447,7 +457,7 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
         num_students_imp, num_schools_imp = improve_original_rank(student_changes_orank, school_changes_orank, num_students_change, num_schools_change)
 
         nash_welfare_students, nash_welfare_schools = nash_welfare(student_Match, school_Match)
-        mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools = average_rank_match(student_Match, school_Match)
+        mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools, mean_original_ranks_candidates = average_rank_match(student_Match, school_Match, candidates)
 
         #Students
         for size, value in num_students_change.items():
@@ -469,6 +479,8 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
             ranks_students[size].extend(ary)
         
         #Candidates
+        for size, value in mean_original_ranks_candidates.items():
+            average_oranks_candidates[size] += value/iterations 
 
 
         #Schools
@@ -496,6 +508,6 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     average_num_students_imp, average_num_schools_imp, 
     average_nash_welfare_students, average_nash_welfare_schools, 
     average_oranks_students, average_oranks_schools,
-    ranks_students, ranks_schools
-    )
+    ranks_students, ranks_schools,
+    average_oranks_candidates)
     
