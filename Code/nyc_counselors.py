@@ -137,13 +137,16 @@ def counselor_recomend_increase_preference_sublist(delta, student_preferences, s
     for student, prefs in student_preferences.items():
     
         if student in candidates:
+            recomendations = counselor_recomendations[student]
+            c_recomend = recomendations[:delta]
             student_full_prefs = student_full_preferences[student]
             student_full_prefs_rows = student_full_prefs.view([('', student_full_prefs.dtype)] * student_full_prefs.shape[1])
             prefs_rows = prefs.view([('', prefs.dtype)] * prefs.shape[1])
             potential_additions = np.setdiff1d(student_full_prefs_rows, prefs_rows).view(student_full_prefs.dtype).reshape(-1, student_full_prefs.shape[1])
-            schools_to_add = potential_additions[np.in1d(potential_additions[:,1], counselor_recomendations)]
+            schools_to_add = potential_additions[np.in1d(potential_additions[:,1], c_recomend)]
             s_prefs_restricted = np.concatenate((prefs, schools_to_add), axis = 0)
             student_preferences_2[student] = s_prefs_restricted[s_prefs_restricted[:,0].argsort()]
+            counselor_recomendations[student] = recomendations[delta:]
             
             for school in schools_to_add:
                 sch = school[1]
@@ -155,7 +158,7 @@ def counselor_recomend_increase_preference_sublist(delta, student_preferences, s
     for school, h_prefs in school_full_preferences.items():
         school_preferences_2[school] = h_prefs[np.in1d(h_prefs[:,1], school_possible_partners[school])]
     
-    return student_preferences_2, school_preferences_2
+    return student_preferences_2, school_preferences_2, counselor_recomendations
 
 
 def gale_shapley_modified(n_students, n_schools, student_preferences, school_preferences):
@@ -269,10 +272,9 @@ def simulation_matching_increase_preferences_recomend(Delta, k, n_students, n_sc
         k_prev = k
         k = k + Delta
         print('working on sublist size: ' + str(k))
-        student_pre[k], school_pre[k] = counselor_recomend_increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref, candidates, counselor_recomendations[:Delta])
+        student_pre[k], school_pre[k], counselor_recomendations = counselor_recomend_increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref, candidates, counselor_recomendations)
         student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
-        del counselor_recomendations[:Delta]
-        
+
     return student_M, school_M, candidates
 
 

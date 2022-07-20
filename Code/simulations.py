@@ -874,7 +874,7 @@ plt.legend(loc="upper right")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/100_101/average_oranks.png')
 '''
 
-
+'''
 ################################################################################
 ################################################################################
 ################################################################################
@@ -1003,6 +1003,138 @@ plt.xlabel("Lenght of student's/counselor sub-list")
 plt.ylabel("Average ranks")
 plt.legend(loc="upper right")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_100_100/average_oranks.png')
+'''
+
+
+
+################################################################################
+################################################################################
+################################################################################
+# MC simulations of improvement of nash welfare, average real ranks and 
+# distributions of ranks with counselors that have a high probability of success. 
+# Complete list of preferences, additions are sampled from the complete list
+################################################################################
+################################################################################
+################################################################################
+
+delta = 1 
+start = 10
+add = 90
+students = 100
+schools = 101
+repetitions = 50
+candidates = 10
+
+(average_students_change, average_schools_change, average_students_unm_mat, 
+    average_schools_unm_mat, average_students_imp, average_schools_imp, 
+    average_nash_welfare_students, average_nash_welfare_schools, average_oranks_students, average_oranks_schools,
+    ranks_students, ranks_schools, average_oranks_candidates)  = cnyc.mc_simulations_improvement(delta, start, add, students, schools, candidates, repetitions, recomend = True)
+
+
+for interval_start in range(start, start+add, 10):
+    for k in range(interval_start, interval_start + 10, 1):
+        if k < start+add:
+            ranks = np.array(ranks_students[k])
+            sns.distplot(ranks, hist = False, kde = True,
+                        label = k)
+    plt.legend(title = 'Sub-list')
+    plt.title('Density Plot for Ranks')
+    plt.xlabel('Ranks')
+    plt.ylabel('Density')
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/density_ranks_students_'+str(interval_start)+'.png')
+    plt.clf()
+
+
+for interval_start in range(start, start+add, 10):
+    for k in range(interval_start, interval_start + 10, 1):
+        if k < start+add:
+            ranks = np.array(ranks_schools[k])
+            sns.distplot(ranks, hist = False, kde = True,
+                        label = k)
+    plt.legend(title = 'Sub-list')
+    plt.title('Density Plot for Ranks')
+    plt.xlabel('Ranks')
+    plt.ylabel('Density')
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/density_ranks_schools_'+str(interval_start)+'.png')
+    plt.clf()
+
+
+barWidth = 0.25
+
+lists2 = sorted(average_students_change.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(101)
+plt.bar(x2, y2, color = 'royalblue', label = 'Students', width=barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("M_k/M_{k-1}")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_edges_change_match_students.png')
+
+lists2 = sorted(average_students_imp.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(102)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("% Students with better match")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_improvement_rank_match_students.png')
+
+lists2 = sorted(average_students_unm_mat.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(103)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("|Students unmatched to matched|")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_number_students_unm_match.png')
+
+lists2 = sorted(average_schools_imp.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(104)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("% Schools with better match")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_improvement_rank_match_schools.png')
+
+lists2 = sorted(average_schools_unm_mat.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(105)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("|Schools unmatched to matched|")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_number_schools_unm_match.png')
+
+lists2 = sorted(average_nash_welfare_students.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(106)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_nash_social_welfare_students.png')
+
+lists2 = sorted(average_nash_welfare_schools.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(107)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_nash_social_welfare_schools.png')
+
+
+lists2 = sorted(average_oranks_students.items()) 
+lists3 = sorted(average_oranks_schools.items()) 
+lists1 = sorted(average_oranks_candidates.items())
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+x1, y1 = zip(*lists1)
+br2 = np.arange(len(x2))
+br3 = [x + barWidth for x in br2]
+br1 = [x + barWidth for x in br3]
+plt.figure(108)
+plt.bar(br2, y2, color = 'royalblue', label = 'Students', width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Schools', width=barWidth)
+plt.bar(br1, y1, color = 'green', label = 'Students-Counselor', width = barWidth)
+plt.xlabel("Lenght of student's/counselor sub-list")
+plt.ylabel("Average ranks")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_oranks.png')
 
 
 print('code succesfull')
