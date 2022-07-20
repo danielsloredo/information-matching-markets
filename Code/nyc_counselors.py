@@ -249,6 +249,33 @@ def simulation_matching_increase_preferences(Delta, k, n_students, n_schools, ad
         
     return student_M, school_M, candidates
 
+def simulation_matching_increase_preferences_recomend(Delta, k, n_students, n_schools, additions, n_candidates):
+    '''
+    Simulates the matching outcome under diferent preference list sizes where we only add new preferences.
+    '''
+    student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
+
+    student_pre = {}
+    school_pre = {}
+    student_M = {}
+    school_M = {}
+    
+    candidates = generate_candidates(student_f_pref, n_candidates)
+    student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
+    counselor_recomendations = generate_counselor_recomendations(candidates, student_pre[k], school_f_pref)
+    student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+    
+    for j in range(1,additions+1):
+        k_prev = k
+        k = k + Delta
+        print('working on sublist size: ' + str(k))
+        student_pre[k], school_pre[k] = counselor_recomend_increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref, candidates, counselor_recomendations[:Delta])
+        student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+        del counselor_recomendations[:Delta]
+        
+    return student_M, school_M, candidates
+
+
 def differences_match(Delta, k , additions, student_M, school_M):
     '''
     Computes the change in stable outcome
@@ -469,7 +496,7 @@ def average_rank_match(student_M, school_M, candidates):
 
 
 
-def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, n_candidates, iterations):
+def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, n_candidates, iterations, recomend = False):
     '''
     Monte Carlo simulations of the percentage of students that improved partner between stable outcomes
     '''
@@ -495,7 +522,10 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     for i in range(iterations):
         print('Working on iteration: ' + str(i))
 
-        student_Match, school_Match, candidates = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions, n_candidates)
+        if recomend:
+            student_Match, school_Match, candidates = simulation_matching_increase_preferences_recomend(Delta, sublist, n_students, n_schools, additions, n_candidates)
+        else:
+            student_Match, school_Match, candidates = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions, n_candidates)
 
         student_changes, school_changes = differences_match(Delta, sublist, additions, student_Match, school_Match)
         num_students_change, num_schools_change = total_differences_match(student_changes, school_changes)
