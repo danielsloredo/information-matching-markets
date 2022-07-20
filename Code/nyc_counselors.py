@@ -64,6 +64,21 @@ def generate_candidates(student_preferences, n_candidates):
     candidates = np.random.choice(list(student_preferences.keys()), n_candidates, replace = False).tolist()
     return candidates
 
+def generate_counselor_recomendations(candidates, school_full_preferences):
+    counselor_recomendations = {}
+
+    for candidate in candidates:
+        recomend = []
+        for school, prefs in school_full_preferences.items():
+            stud = np.copy(prefs[prefs[:,1]==candidate][0])
+            candidate_idx  = stud[0]
+            recomend.append([candidate_idx, school])
+
+        recomend.sort()
+        counselor_recomendations[candidate] = np.array(recomend)
+
+    return counselor_recomendations
+
 def counselor_increase_preference_sublist(delta, student_preferences, school_preferences, student_full_preferences, school_full_preferences, candidates):
     '''
     Function that increases the previously sampled sublist of preferences. 
