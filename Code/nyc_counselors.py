@@ -64,10 +64,11 @@ def generate_candidates(student_preferences, n_candidates):
     candidates = np.random.choice(list(student_preferences.keys()), n_candidates, replace = False).tolist()
     return candidates
 
-def generate_counselor_recomendations(candidates, school_full_preferences):
+def generate_counselor_recomendations(candidates, student_preferences, school_full_preferences):
     counselor_recomendations = {}
 
     for candidate in candidates:
+        current_prefs = list(student_preferences[candidate][:, 1])
         recomend = []
         for school, prefs in school_full_preferences.items():
             stud = np.copy(prefs[prefs[:,1]==candidate][0])
@@ -75,7 +76,8 @@ def generate_counselor_recomendations(candidates, school_full_preferences):
             recomend.append([candidate_idx, school])
 
         recomend.sort()
-        counselor_recomendations[candidate] = np.array(recomend)
+        school_recomend = [item[1] for item in recomend if item[1] not in current_prefs]
+        counselor_recomendations[candidate] = school_recomend
 
     return counselor_recomendations
 
@@ -119,6 +121,40 @@ def counselor_increase_preference_sublist(delta, student_preferences, school_pre
     #print("Stud List time --- %s seconds ---" % (stud_list_time))
     #print("School append time --- %s seconds ---" % (total_stud_time))
     #print("School list time --- %s seconds ---" % (school_list_time))    
+    return student_preferences_2, school_preferences_2
+
+
+def counselor_recomend_increase_preference_sublist(delta, student_preferences, school_preferences, student_full_preferences, school_full_preferences, candidates, counselor_recomendations):
+    '''
+    Function that increases the previously sampled sublist of preferences. 
+    Inputs
+    '''
+    
+    student_preferences_2 = {}
+    school_preferences_2 = dict(school_preferences)
+    school_possible_partners = {school: pref[:, 1] for school, pref in school_preferences.items()}
+    
+    for student, prefs in student_preferences.items():
+    
+        if student in candidates:
+            student_full_prefs = student_full_preferences[student]
+            student_full_prefs_rows = student_full_prefs.view([('', student_full_prefs.dtype)] * student_full_prefs.shape[1])
+            prefs_rows = prefs.view([('', prefs.dtype)] * prefs.shape[1])
+            potential_additions = np.setdiff1d(student_full_prefs_rows, prefs_rows).view(student_full_prefs.dtype).reshape(-1, student_full_prefs.shape[1])
+            schools_to_add = potential_additions[np.in1d(potential_additions[:,1], counselor_recomendations)]
+            s_prefs_restricted = np.concatenate((prefs, schools_to_add), axis = 0)
+            student_preferences_2[student] = s_prefs_restricted[s_prefs_restricted[:,0].argsort()]
+            
+            for school in schools_to_add:
+                sch = school[1]
+                school_possible_partners[sch] = np.append(school_possible_partners[sch], student)
+            
+        else:
+            student_preferences_2[student] = prefs
+    
+    for school, h_prefs in school_full_preferences.items():
+        school_preferences_2[school] = h_prefs[np.in1d(h_prefs[:,1], school_possible_partners[school])]
+    
     return student_preferences_2, school_preferences_2
 
 
