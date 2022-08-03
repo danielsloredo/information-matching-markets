@@ -610,5 +610,3 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     average_oranks_students, average_oranks_schools,
     ranks_students, ranks_schools,
     average_oranks_candidates)
-
-    
