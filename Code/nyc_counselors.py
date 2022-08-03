@@ -497,6 +497,23 @@ def average_rank_match(student_M, school_M, candidates):
     return average_oranks_students, average_oranks_schools, oranks_students, oranks_schools, average_oranks_candidates
 
 
+def rank_profile(student_M, school_M): 
+    
+    ranks_profile = {}
+
+    for size, match in student_M.items(): 
+        n_schools = school_M[size].shape[0]
+        r_profile =[0 for i in range(1, n_schools+2)]
+        ranks = np.copy(match[:,0])
+        ranks[ranks == -9999] = n_schools + 1
+        ranks[:] += 1
+        ranks_list = ranks.tolist()
+        for rk in ranks_list: 
+            r_profile[rk] += 1
+        
+        ranks_profile[size] = np.array(r_profile)
+
+    return ranks_profile
 
 def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, n_candidates, iterations, recomend = False):
     '''
@@ -593,4 +610,5 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     average_oranks_students, average_oranks_schools,
     ranks_students, ranks_schools,
     average_oranks_candidates)
+
     
