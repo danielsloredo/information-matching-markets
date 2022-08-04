@@ -417,6 +417,55 @@ def rank_profile(student_M, school_M):
 
     return ranks_profile
 
+def utility_functions(student_M, school_M, ranks_p): 
+    
+    leontief_utility = {}
+
+    for size, match in student_M.items():
+        ranks = np.copy(match[:,0])
+        ranks[ranks == -9999] =  school_M[size].shape[0]
+        ranks[:] += 1
+        ranks_float = ranks.astype(np.float64)
+        utility = np.reciprocal(ranks_float)
+        leontief_utility[size] = np.min(utility)
+    
+    cobb_stone_utility = {}
+    qlinear_power_utility = {}
+    qlinear_square_utility = {}
+    miscelaneous_1_utility = {}
+    miscelaneous_2_utility = {}
+
+    random_key = ra.choice(list(ranks_p))
+    n_ranks = ranks_p[random_key].shape[0]
+    ranks_match = range(n_ranks)
+    exponents = [n_ranks + 1 - i for i in ranks_match]
+    #ranks_match_array = np.array(ranks_match)
+    exponents_array = np.array(exponents)
+
+
+    for size, profile in ranks_p.items():
+        profile_1 = np.copy(profile) + 1
+        utility_1 = np.power(profile_1, exponents_array)
+        cobb_stone_utility[size] = utility_1.prod()
+
+        profile_unmatched = profile[-1:].item()
+
+        utility_2 = np.power(profile[:-1], exponents_array[:-1])
+        utility_3 = np.power(profile[:-1], 2)
+        qlinear_power_utility[size] = utility_2.sum() - n_ranks * profile_unmatched
+        qlinear_square_utility[size] = utility_3.sum() - n_ranks * profile_unmatched
+
+        utility_4 = utility_1[:-1]
+        miscelaneous_1_utility[size] = utility_4.prod()/(profile_unmatched+1)**n_ranks
+
+        utility_5 = (np.reciprocal(np.power(np.multiply(profile, exponents_array), 2)) - 1) / (-2)
+        miscelaneous_2_utility[size] = utility_5.prod()
+        
+
+
+    return (leontief_utility, cobb_stone_utility, qlinear_power_utility, qlinear_square_utility, 
+    miscelaneous_1_utility, miscelaneous_2_utility)
+
 def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, iterations):
     '''
     Monte Carlo simulations of the percentage of students that improved partner between stable outcomes
