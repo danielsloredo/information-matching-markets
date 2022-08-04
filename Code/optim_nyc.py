@@ -385,14 +385,14 @@ def average_rank_match(student_M, school_M):
 
     for size, match in student_M.items():
         ranks = np.copy(match[:,0])
-        ranks[ranks == -9999] =  school_M[size].shape[0] + 1
+        ranks[ranks == -9999] =  school_M[size].shape[0]
         ranks[:] += 1
         oranks_students[size] = ranks.tolist()
         average_oranks_students[size] = np.mean(ranks)
     
     for size, match in school_M.items():
         ranks = np.copy(match[:,0])
-        ranks[ranks == -9999] =  student_M[size].shape[0] + 1
+        ranks[ranks == -9999] =  student_M[size].shape[0]
         ranks[:] += 1
         oranks_schools[size] = ranks.tolist()
         average_oranks_schools[size] = np.mean(ranks)
@@ -405,13 +405,13 @@ def rank_profile(student_M, school_M):
 
     for size, match in student_M.items(): 
         n_schools = school_M[size].shape[0]
-        r_profile =[0 for i in range(1, n_schools+2)]
+        r_profile =[0 for i in range(n_schools+1)]
         ranks = np.copy(match[:,0])
-        ranks[ranks == -9999] = n_schools + 1
+        ranks[ranks == -9999] = n_schools
         ranks[:] += 1
         ranks_list = ranks.tolist()
-        for rk in ranks_list: 
-            r_profile[rk] += 1
+        for rk in ranks_list:
+            r_profile[rk-1] += 1
         
         ranks_profile[size] = np.array(r_profile)
 
@@ -500,4 +500,62 @@ def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools,
     average_num_schools_unm_mat, average_num_students_imp, average_num_schools_imp, 
     average_nash_welfare_students, average_nash_welfare_schools, average_oranks_students, average_oranks_schools,
     ranks_students, ranks_schools)
+
+
+def mc_simulations_utility(Delta, sublist, additions, n_students, n_schools, iterations):
+    '''
+    Function to simulate the behaviour of different utility functions on the stable match
+    outcome with different sublist sizes.
+    '''
+    beg = sublist + Delta
+    end = sublist+Delta*additions + Delta
     
+    average_nash_welfare_students = {x : 0 for x in range(sublist, end, Delta)}
+    average_nash_welfare_schools = {x : 0 for x in range(sublist, end, Delta)}
+
+    average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
+    average_oranks_schools = {x : 0 for x in range(sublist, end, Delta)}
+    ranks_students = {x : [] for x in range(sublist, end, Delta)}
+    ranks_schools = {x : [] for x in range(sublist, end, Delta)}
+    r_profile = {x : np.zeros(n_schools+1) for x in range(sublist, end, Delta)}
+
+
+    for i in range(iterations):
+        print('Working on iteration: ' + str(i))
+
+        student_Match, school_Match, student_original_preferences, school_original_preferences = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions)
+
+        nash_welfare_students, nash_welfare_schools = nash_welfare(student_Match, school_Match)
+        mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools = average_rank_match(student_Match, school_Match)
+        ranks_profile = rank_profile(student_Match, school_Match)
+
+
+        #Students
+        for size, value in nash_welfare_students.items():
+            average_nash_welfare_students[size] += value/iterations
+
+        for size, value in mean_original_ranks_students.items():
+            average_oranks_students[size] += value/iterations 
+
+        for size, ary in or_students.items():
+            ranks_students[size].extend(ary)
+        
+        for size, rk_profile in ranks_profile.items():
+            r_profile[size] = r_profile[size] + rk_profile/iterations  
+            
+
+        #Schools
+
+        for size, value in nash_welfare_schools.items():
+            average_nash_welfare_schools[size] += value/iterations
+
+        for size, value in mean_original_ranks_schools.items():
+            average_oranks_schools[size] += value/iterations
+
+        for size, ary in or_schools.items():
+            ranks_schools[size].extend(ary)
+
+    return (average_nash_welfare_students, average_nash_welfare_schools, 
+    average_oranks_students, average_oranks_schools,
+    ranks_students, ranks_schools, 
+    r_profile)
