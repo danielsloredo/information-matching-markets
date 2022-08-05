@@ -421,6 +421,8 @@ def utility_functions(student_M, school_M, ranks_p):
     
     leontief_utility = {}
     miscelaneous_3_utility = {}
+    exponential_utility = {}
+    s_shape_utility = {}
 
     for size, match in student_M.items():
         ranks = np.copy(match[:,0])
@@ -433,6 +435,20 @@ def utility_functions(student_M, school_M, ranks_p):
         coefs = school_M[size].shape[0] + 2 - ranks_float
         utility_misc = 1/2 - np.reciprocal(np.power(coefs, 2))/2
         miscelaneous_3_utility[size] = utility_misc.sum()
+
+        exps = school_M[size].shape[0] + 1 - ranks_float
+        utility_exp = 1 - np.exp(-1 * exps)
+        exponential_utility[size] = utility_exp.sum()   
+
+        mid_point = school_M[size].shape[0] // 2
+        ranks_half_1 = ranks_float[:mid_point]
+        ranks_half_2 = ranks_float[mid_point:]
+        exps_1 = school_M[size].shape[0] + 1 - ranks_half_1 - mid_point
+        exps_2 = school_M[size].shape[0] + 1 - ranks_half_2 - mid_point
+        utility_shape_1 = 1 - np.exp(-1 * exps)
+        utility_shape_2 = (1 - np.exp(exps)) * (-2)
+        s_shape_utility[size] = utility_shape_1.sum() + utility_shape_2.sum()
+        
     
     cobb_stone_utility = {}
     qlinear_power_utility = {}
@@ -443,7 +459,7 @@ def utility_functions(student_M, school_M, ranks_p):
     random_key = ra.choice(list(ranks_p))
     n_ranks = ranks_p[random_key].shape[0]
     ranks_match = range(n_ranks)
-    exponents = [(n_ranks - i)/n_ranks for i in ranks_match]
+    exponents = [(n_ranks + 1 - i)/n_ranks for i in ranks_match]
     coefficients = [n_ranks + 1 - i for i in ranks_match]
     #ranks_match_array = np.array(ranks_match)
     exponents_array = np.array(exponents)
@@ -472,7 +488,8 @@ def utility_functions(student_M, school_M, ranks_p):
         miscelaneous_2_utility[size] = utility_5.sum()
 
     return (leontief_utility, cobb_stone_utility, qlinear_power_utility, qlinear_square_utility, 
-    miscelaneous_1_utility, miscelaneous_2_utility, miscelaneous_3_utility)
+    miscelaneous_1_utility, miscelaneous_2_utility, miscelaneous_3_utility,
+    exponential_utility, s_shape_utility)
 
 def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, iterations):
     '''
@@ -577,6 +594,8 @@ def mc_simulations_utility(Delta, sublist, additions, n_students, n_schools, ite
     average_miscelaneous_1_utility = {x : 0 for x in range(sublist, end, Delta)}
     average_miscelaneous_2_utility = {x : 0 for x in range(sublist, end, Delta)}
     average_miscelaneous_3_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_exponential_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_s_shape_utility = {x : 0 for x in range(sublist, end, Delta)}
     
 
     average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
@@ -595,7 +614,8 @@ def mc_simulations_utility(Delta, sublist, additions, n_students, n_schools, ite
         mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools = average_rank_match(student_Match, school_Match)
         ranks_profile = rank_profile(student_Match, school_Match)
         (leontief_u, cobb_stone_u, qlinear_power_u, qlinear_square_u, 
-        miscelaneous_1_u, miscelaneous_2_u, miscelaneous_3_u) = utility_functions(student_Match, school_Match, ranks_profile)
+        miscelaneous_1_u, miscelaneous_2_u, miscelaneous_3_u,
+        exponential_u, s_shape_u) = utility_functions(student_Match, school_Match, ranks_profile)
 
 
         #Students
@@ -631,7 +651,12 @@ def mc_simulations_utility(Delta, sublist, additions, n_students, n_schools, ite
 
         for size, value in miscelaneous_3_u.items():
             average_miscelaneous_3_utility[size] += value/iterations
-            
+        
+        for size, value in exponential_u.items():
+            average_exponential_utility[size] += value/iterations
+
+        for size, value in s_shape_u.items():
+            average_s_shape_utility[size] += value/iterations 
 
         #Schools
 
@@ -651,4 +676,5 @@ def mc_simulations_utility(Delta, sublist, additions, n_students, n_schools, ite
     average_leontief_utility, average_cobb_stone_utility, 
     average_qlinear_power_utility, average_qlinear_square_utility, 
     average_miscelaneous_1_utility, average_miscelaneous_2_utility,
-    average_miscelaneous_3_utility) 
+    average_miscelaneous_3_utility, average_exponential_utility,
+    average_s_shape_utility) 
