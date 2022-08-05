@@ -491,6 +491,7 @@ def utility_functions(student_M, school_M, ranks_p):
     miscelaneous_1_utility, miscelaneous_2_utility, miscelaneous_3_utility,
     exponential_utility, s_shape_utility)
 
+
 def mc_simulations_improvement(Delta, sublist, additions, n_students, n_schools, iterations):
     '''
     Monte Carlo simulations of the percentage of students that improved partner between stable outcomes
@@ -678,3 +679,28 @@ def mc_simulations_utility(Delta, sublist, additions, n_students, n_schools, ite
     average_miscelaneous_1_utility, average_miscelaneous_2_utility,
     average_miscelaneous_3_utility, average_exponential_utility,
     average_s_shape_utility) 
+
+def expected_number_students(ranks_profile, n_schools):
+    e_n_students_k = {x+1 : [] for x in range(n_schools+1)}
+    for size, profile in ranks_profile.items():
+        for i in range(len(profile)):
+            temp_profile = profile[:i+1]
+            e_n_students_k[i+1].append(temp_profile.sum()) 
+    return e_n_students_k
+
+
+def expected_value(values, weights):
+    values = np.asarray(values)
+    return (values * weights).sum() / weights.sum()
+
+def expected_rank_partner(ranks_profile, n_schools):
+    e_rank_k = {x+1 : [] for x in range(n_schools+1)}
+    for size, profile in ranks_profile.items():
+        for i in range(len(profile)):
+            ranks = [j for j in range(i+1)]
+            temp_profile = profile[:i+1]
+            i_items_sum = temp_profile.sum()
+            weights_temp_profile = temp_profile/i_items_sum
+            e_rank_k[i+1].append(expected_value(ranks, weights_temp_profile))
+    return e_rank_k 
+
