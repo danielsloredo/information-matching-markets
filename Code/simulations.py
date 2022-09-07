@@ -1136,7 +1136,7 @@ plt.ylabel("Average ranks")
 plt.legend(loc="upper right")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/counselor_recomend_100_101_10/average_oranks.png')
 '''
-
+'''
 ################################################################################
 # MC simulations of improvement of match when increasing sublist size
 # Complete list of preferences, additions are sampled from the complete list
@@ -1159,6 +1159,40 @@ average_miscelaneous_1_u, average_miscelaneous_2_u,
 average_miscelaneous_3_u, average_exponential_u,
 average_s_shape_u) = onyc.mc_simulations_utility(delta, start, add, students, schools, repetitions)
 
+e_number_students = onyc.expected_number_students(r_profile, students)
+
+e_rank_partner = onyc.expected_rank_partner(r_profile, students)
+
+barWidth = 0.25
+for i in range(0, schools+1, 10):
+    y2 = e_number_students[i+1] 
+    x2 = [k for k in range(start, start+add+1)]
+    plt.figure(1)
+    plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+    plt.xlabel("Lenght of student's sub-list")
+    plt.ylabel("rk(i,k)")
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/utility/expected_number_students_'+str(i+1)+'.png')
+    plt.clf()
+
+for i in range(0, schools+1, 10):
+    y2 = e_rank_partner[i+1] 
+    x2 = [k for k in range(start, start+add+1)]
+    plt.figure(2)
+    plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+    plt.xlabel("Lenght of student's sub-list")
+    plt.ylabel("rk(i,k)-rank")
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/utility/expected_rank_'+str(i+1)+'.png')
+    plt.clf()
+
+for i in range(0, 10, 1):
+    y2 = e_rank_partner[i+1] 
+    x2 = [k for k in range(start, start+add+1)]
+    plt.figure(3)
+    plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+    plt.xlabel("Lenght of student's sub-list")
+    plt.ylabel("rk(i,k)-rank")
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/utility/expected_rank_'+str(i+1)+'.png')
+    plt.clf()
 
 
 for interval_start in range(start, start+add, 10):
@@ -1173,7 +1207,6 @@ for interval_start in range(start, start+add, 10):
     plt.ylabel('Density')
     plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/utility/density_ranks_students_'+str(interval_start)+'.png')
     plt.clf()
-
 
 barWidth = 0.25
 
@@ -1255,5 +1288,73 @@ plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("Average ranks")
 plt.legend(loc="upper right")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/utility/average_oranks.png')
+'''
+'''
+################################################################################
+# Monte Carlo simulations of bad_samples on market
+#
+################################################################################
+
+delta = 1 
+start = 5
+add = 94
+students = 100
+schools = 100
+repetitions = 100
+
+number_bad_samples = onyc.mc_simulations_bad_sample(delta, start, add, students, schools, repetitions)
+print('The number of bad samples is:')
+print(number_bad_samples)
+'''
+
+
+################################################################################
+# Monte Carlo simulations of bad_samples on market
+#
+################################################################################
+'''
+delta = 1 
+start = 21
+add = 0
+students = 100
+schools = 100
+repetitions = 3
+
+average_bad_edge_p, number_bad_samples = onyc.mc_simulations_bad_edges(delta, start, add, students, schools, repetitions)
+
+print('The average of bad edges proportions:')
+print(average_bad_edge_p)
+
+print('The number of bad samples is:')
+print(number_bad_samples)
+'''
+
+average_bad_edge_p={3: 0.0, 4: 0.00026041666666666666, 5: 0.00010526315789473683, 6: 0.0004148936170212766, 7: 0.0003440860215053763, 8: 0.0003152173913043479, 9: 0.0014725274725274726, 10: 0.0012555555555555555, 11: 0.001146067415730337, 12: 0.0014886363636363636, 13: 0.0015517241379310346, 14: 0.001232558139534884, 15: 0.0010117647058823529, 16: 0.0012142857142857142, 17: 0.001602409638554217, 18: 0.0010365853658536586, 19: 0.0018641975308641974, 20: 0.0012125, 21: 0.000759493670886076, 22: 0.0014871794871794872, 23: 0.0013766233766233766, 24: 0.003078947368421053, 25: 0.0015333333333333334, 26: 0.0027432432432432435, 27: 0.0018493150684931509, 28: 0.0016944444444444442, 29: 0.0015915492957746479, 30: 0.001728571428571429, 31: 0.001463768115942029, 32: 0.0012352941176470588, 33: 0.0008805970149253731, 34: 0.0014090909090909089, 35: 0.0010307692307692307, 36: 0.0016093750000000001, 37: 0.001142857142857143, 38: 0.0010806451612903228, 39: 0.0013606557377049183, 40: 0.0011333333333333336, 41: 0.001389830508474576, 42: 0.0012241379310344827, 43: 0.0013157894736842105, 44: 0.0007857142857142857, 45: 0.0011818181818181817, 46: 0.001037037037037037, 47: 0.001962264150943396, 48: 0.0016346153846153845, 49: 0.002019607843137255, 50: 0.0015999999999999999, 51: 0.0011836734693877551, 52: 0.0007916666666666666, 53: 0.001702127659574468, 54: 0.0011521739130434785, 55: 0.0007999999999999999, 56: 0.0010909090909090907, 57: 0.0010465116279069768, 58: 0.0010238095238095238, 59: 0.0009756097560975611, 60: 0.001125, 61: 0.000717948717948718, 62: 0.0005, 63: 0.0005945945945945945, 64: 0.0008611111111111111, 65: 0.0005714285714285715, 66: 0.0006764705882352941, 67: 0.0006060606060606061, 68: 0.0006875000000000001, 69: 0.0006451612903225806, 70: 0.0007333333333333334, 71: 0.0005517241379310344, 72: 0.0008571428571428572, 73: 0.0007407407407407408, 74: 0.0007692307692307693, 75: 0.00056, 76: 0.0007500000000000001, 77: 0.0005217391304347827, 78: 0.0003636363636363636, 79: 0.0007142857142857144, 80: 0.0006000000000000001, 81: 0.0008421052631578948, 82: 0.0006111111111111111, 83: 0.0008235294117647058, 84: 0.0008125000000000001, 85: 0.0010000000000000002, 86: 0.0007142857142857144, 87: 0.0006923076923076924, 88: 0.0006666666666666669, 89: 0.0002727272727272727, 90: 0.00030000000000000003, 91: 0.0005555555555555557, 92: 0.0005, 93: 0.00028571428571428574, 94: 0.0006666666666666668, 95: 0.0008, 96: 0.0005, 97: 0.0006666666666666668, 98: 0.0005, 99: 0.0}
+barWidth = 0.25
+lists2 = sorted(average_bad_edge_p.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(1)
+plt.bar(x2, y2, color = 'sandybrown',  width=barWidth)
+plt.xlabel("k sample size")
+plt.ylabel("Average proportion of bad edges")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_opt/bad_edges/average_bad_edges_proportion_2.png')
+
+
+'''
+delta = 1 
+start = 2
+add = 7
+students = 10
+schools = 10
+repetitions = 100
+
+average_bad_edge_p, number_bad_samples = onyc.mc_simulations_bad_edges(delta, start, add, students, schools, repetitions)
+
+print('The average of bad edges proportions:')
+print(average_bad_edge_p)
+
+print('The number of bad samples is:')
+print(number_bad_samples)
+'''
 
 print('code succesfull')

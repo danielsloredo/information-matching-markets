@@ -126,7 +126,7 @@ def gale_shapley_modified(n_students, n_schools, student_preferences, school_pre
         student = unmatched_students[0]
         to_break = 0
         
-        while next_student_choice[student]>=size_preferences and to_break == 0:
+        while next_student_choice[student]>=student_preferences[student].shape[0] and to_break == 0:
             if len(unmatched_students)>1:  
                 unmatched_students.pop(0)
                 student = unmatched_students[0]
@@ -703,4 +703,240 @@ def expected_rank_partner(ranks_profile, n_schools):
             weights_temp_profile = temp_profile/i_items_sum
             e_rank_k[i+1].append(expected_value(ranks, weights_temp_profile))
     return e_rank_k 
+
+
+
+###########
+#Functions to check for bad edges
+###########
+def change_original_rank_bad_edge(student_Match, student_M):
+    '''
+    Computes how many students obtain an actual better partner
+    '''
+    change  = []
+    bad_edge = False
+
+    for i in range(student_Match.shape[0]):
+        rank_prev = student_Match[i,0]
+        rank_new = student_M[i,0]
+        if rank_prev == -9999 and rank_new == -9999:
+            change.append(0) 
+        elif rank_prev == -9999 and rank_new != -9999:
+            change.append(1)
+        elif rank_prev > rank_new:
+            change.append(1)
+        elif rank_prev < rank_new: 
+            change.append(2)
+        else: 
+            change.append(0)
+
+    if 2 in change:
+        if 1 not in change: 
+            bad_edge = True
+
+    return bad_edge
+
+
+def search_bad_edge(student_preferences, school_preferences, student_full_preferences, school_full_preferences, student_Match):
+    ''' 
+    Inputs
+    '''
+
+    n_students = len(student_preferences.keys())
+    n_schools = len(school_preferences.keys())
+
+    student_preferences_2 = dict(student_preferences)
+    school_preferences_2 = dict(school_preferences)
+    school_possible_partners = {school: pref[:, 1] for school, pref in school_preferences.items()}
+
+    bad_e = False
+    
+    for student, prefs in student_preferences.items():
+
+        if bad_e == False:
+            student_full_prefs = student_full_preferences[student]
+            student_full_prefs_rows = student_full_prefs.view([('', student_full_prefs.dtype)] * student_full_prefs.shape[1])
+            prefs_rows = prefs.view([('', prefs.dtype)] * prefs.shape[1])
+            potential_additions = np.setdiff1d(student_full_prefs_rows, prefs_rows).view(student_full_prefs.dtype).reshape(-1, student_full_prefs.shape[1])
+            for new_edge in potential_additions:
+                if bad_e == False:
+                    s_prefs_restricted = np.vstack((prefs, new_edge))
+                    student_preferences_2[student] = s_prefs_restricted[s_prefs_restricted[:,0].argsort()]
+
+                    sch = new_edge[1]
+                    school_possible_partners[sch] = np.append(school_possible_partners[sch], student)
+                    h_prefs = school_full_preferences[sch]
+                    school_preferences_2[sch] = h_prefs[np.in1d(h_prefs[:,1], school_possible_partners[sch])]
+
+                    student_M, school_M = gale_shapley_modified(n_students, n_schools, student_preferences_2, school_preferences_2)
+
+                    ## Measure change on stable match
+
+                    bad_e = change_original_rank_bad_edge(student_Match, student_M)
+                else: 
+                    break
+        else: 
+            break
+
+    return bad_e
+
+
+
+def bad_edges(Delta, k, n_students, n_schools, additions):
+    '''
+    Finds a bad edge in the sample sublist if there is one.
+    '''
+    #Sample the full list of preferences
+    student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
+
+    student_pre = {}
+    school_pre = {}
+    student_M = {}
+    school_M = {}
+    
+    student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
+    student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+    bad_edge = search_bad_edge(student_pre[k], school_pre[k], student_f_pref, school_f_pref, student_M[k])
+    
+    for j in range(1,additions+1):
+        if bad_edge == False:
+            k_prev = k
+            k = k + Delta
+            print('working on sublist size: ' + str(k))
+            student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
+            student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+            bad_edge = search_bad_edge(student_pre[k], school_pre[k], student_f_pref, school_f_pref, student_M[k])
+        else: 
+            break
+    return bad_edge
+
+
+def mc_simulations_bad_sample(Delta, sublist, additions, n_students, n_schools, iterations):
+    '''
+    Function
+    '''
+    bad_sample = {}
+
+    for i in range(iterations):
+        print('Working on sample: ' + str(i))
+
+        bad_sample[i] = bad_edges(Delta, sublist, n_students, n_schools, additions)
+
+    total_bad_samples = sum(1 for v in bad_sample.values() if v==True)
+
+    return (total_bad_samples)
+
+
+def search_all_bad_edges(student_preferences, school_preferences, student_full_preferences, school_full_preferences, student_Match):
+    ''' 
+    Inputs
+    '''
+
+    n_students = len(student_preferences.keys())
+    n_schools = len(school_preferences.keys())
+
+    student_preferences_2 = dict(student_preferences)
+    school_preferences_2 = dict(school_preferences)
+    school_possible_partners = {school: pref[:, 1] for school, pref in school_preferences.items()}
+
+    bad_e_list = []
+    
+    for student, prefs in student_preferences.items():
+        student_full_prefs = student_full_preferences[student]
+        student_full_prefs_rows = student_full_prefs.view([('', student_full_prefs.dtype)] * student_full_prefs.shape[1])
+        prefs_rows = prefs.view([('', prefs.dtype)] * prefs.shape[1])
+        potential_additions = np.setdiff1d(student_full_prefs_rows, prefs_rows).view(student_full_prefs.dtype).reshape(-1, student_full_prefs.shape[1])
+        for new_edge in potential_additions:
+            s_prefs_restricted = np.vstack((prefs, new_edge))
+            student_preferences_2[student] = s_prefs_restricted[s_prefs_restricted[:,0].argsort()]
+
+            sch = new_edge[1]
+            school_possible_partners[sch] = np.append(school_possible_partners[sch], student)
+            h_prefs = school_full_preferences[sch]
+            school_preferences_2[sch] = h_prefs[np.in1d(h_prefs[:,1], school_possible_partners[sch])]
+
+            student_M, school_M = gale_shapley_modified(n_students, n_schools, student_preferences_2, school_preferences_2)
+            
+            ## Measure change on stable match
+
+            bad_e = change_original_rank_bad_edge(student_Match, student_M)
+            if bad_e == False:
+                bad_e_list.append(0)
+            else: 
+                bad_e_list.append(1)
+                #print(student)
+                #print(new_edge)
+                #print(student_M)
+
+    number_bad_edges = sum(bad_e_list)
+    total_edges = len(bad_e_list)
+    bad_edges_prop = number_bad_edges/total_edges
+
+    return bad_edges_prop
+
+
+
+def all_bad_edges(Delta, k, n_students, n_schools, additions):
+    '''
+    Finds a bad edge in the sample sublist if there is one.
+    '''
+    #Sample the full list of preferences
+    student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
+    #print('The initial list of preferences:')
+    #print(student_f_pref, school_f_pref)
+
+    student_pre = {}
+    school_pre = {}
+    student_M = {}
+    school_M = {}
+    bad_edge_p = {}
+
+    student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
+    #print('The sample k list of preferences:')
+    #print(student_pre[k], school_pre[k])
+    student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+    #print('The initial gale shapley result:')
+    #print(student_M[k])
+    bad_edge_p[k] = search_all_bad_edges(student_pre[k], school_pre[k], student_f_pref, school_f_pref, student_M[k])
+    
+    for j in range(1,additions+1):
+
+        k_prev = k
+        k = k + Delta
+        print('working on sublist size: ' + str(k))
+        student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
+        student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
+        bad_edge_p[k] = search_all_bad_edges(student_pre[k], school_pre[k], student_f_pref, school_f_pref, student_M[k])
+        
+    return bad_edge_p
+
+
+def mc_simulations_bad_edges(Delta, sublist, additions, n_students, n_schools, iterations):
+    
+    end = sublist+Delta*additions + Delta
+    
+    average_bad_edges_proportion = {x : 0 for x in range(sublist, end, Delta)}
+    bad_sample_sum = {i : 0 for i in range(iterations)}
+    bad_sample = {}
+
+    for i in range(iterations):
+        print('Working on sample: ' + str(i))
+
+        bad_edges_proportion = all_bad_edges(Delta, sublist, n_students, n_schools, additions)
+
+        for size, value in bad_edges_proportion.items():
+            average_bad_edges_proportion[size] += value/iterations
+            bad_sample_sum[i] += value
+        if bad_sample_sum[i] > 0: 
+            bad_sample[i] = 1
+        else: 
+            bad_sample_sum[i] = 0
+
+    total_bad_samples = sum(1 for v in bad_sample.values() if v==1)
+
+    return average_bad_edges_proportion, total_bad_samples
+
+
+
+
 
