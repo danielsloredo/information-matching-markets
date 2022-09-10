@@ -942,29 +942,26 @@ def mc_simulations_bad_edges(Delta, sublist, additions, n_students, n_schools, i
 ##########################################
 
 def find_cycles(unmatched_students, unmatched_schools, next_student_choice, next_school_choice, student_preferences, school_preferences, student_match):
-    
     potential_match_student = np.copy(student_match)
-    potential_match_school = []
+    potential_match_school = [-1] * 10
     candidate_students = []
 
-    to_break = 0 
     for student in unmatched_students:
         student_pref  = np.copy(student_preferences[student])
-        while next_student_choice[student] < student_preferences[student].shape[0] and to_break == 0:
+        while next_student_choice[student] < student_preferences[student].shape[0]:
             if student_pref[next_student_choice[student]][1] in unmatched_schools:
                 potential_match_student[student] = student_pref[next_student_choice[student]]
                 candidate_students.append(student)
-                to_break = 1
+                break
             else:
                 next_student_choice[student] += 1
 
-    to_break = 0 
     for school in unmatched_schools:
         school_pref  = np.copy(school_preferences[school])
-        while next_school_choice[school] < school_preferences[school].shape[0] and to_break == 0:
+        while next_school_choice[school] < school_preferences[school].shape[0]:
             if school_pref[next_school_choice[school]][1] in unmatched_students:
                 potential_match_school[school] = school_pref[next_school_choice[school]][1]
-                to_break = 1
+                break
             else:
                 next_school_choice[school] += 1
 
@@ -972,7 +969,7 @@ def find_cycles(unmatched_students, unmatched_schools, next_student_choice, next
     cycles = []
 
     for start_student in candidate_students:
-
+        
         if start_student in visited:
             continue
 
@@ -981,15 +978,28 @@ def find_cycles(unmatched_students, unmatched_schools, next_student_choice, next
         path_schools = [school]
         next_student = potential_match_school[school]
 
-        while start_student != next_student:
-            path_students.append(next_student)
-            next_school = potential_match_student[next_student][1]
-            path_schools.append(next_school)
-            next_student = potential_match_school[next_school]
-        else:
-            cycles.append(path_students)
+        loop_break = 0
+        while next_student not in path_students:
+            if next_student in visited:
+                loop_break = 1
+                break
+            else:
+                path_students.append(next_student)
+                next_school = potential_match_student[next_student][1]
+                path_schools.append(next_school)
+                next_student = potential_match_school[next_school]
+        
+        if loop_break == 0:
+            cycle = []
+            for stud in reversed(path_students):
+                cycle.insert(0,stud)
+                if stud == next_student:
+                    break
+            cycles.append(cycle)
             visited |= set(path_students)
-    
+        else:
+            visited |= set(path_students)
+
     return cycles, potential_match_student
 
 def top_trading_cycles(n_students, n_schools, student_preferences, school_preferences):
@@ -1006,7 +1016,9 @@ def top_trading_cycles(n_students, n_schools, student_preferences, school_prefer
     next_school_choice = [0] * n_schools
     
     while unmatched_students: 
+        
         cycl, p_stud_match = find_cycles(unmatched_students, unmatched_schools, next_student_choice, next_school_choice, student_preferences, school_preferences, student_match)
+
         if not cycl:
             break
         else:
@@ -1021,69 +1033,3 @@ def top_trading_cycles(n_students, n_schools, student_preferences, school_prefer
                     unmatched_schools.remove(school)                  
     return student_match, school_match
 
-
-def gale_shapley_modified(n_students, n_schools, student_preferences, school_preferences):
-    '''
-    Computes the stable match of a market using the DA algorithm by Gale and Shapley.
-    INPUTS:
-        n_students: number of students in the market
-        n_schools: number of schools in the market
-        student_preferences: dictionary with preference lists for students
-        school_preferences: dictionary with preference lists for schools
-    OUTPUT:
-        student_match: list with students stable partner 
-        school_match: list with schools stable partner
-    '''
-
-    unmatched_students = list(range(n_students))
-
-    student_match = np.full((n_students, 2), -9999, dtype=int)
-    school_match = np.full((n_schools, 2), -9999, dtype=int)
-
-    next_student_choice = [0] * n_students
-
-    size_preferences = student_preferences[0].shape[0]
-
-    while unmatched_students: 
-        student = unmatched_students[0]
-        to_break = 0
-        
-        while next_student_choice[student]>=student_preferences[student].shape[0] and to_break == 0:
-            if len(unmatched_students)>1:  
-                unmatched_students.pop(0)
-                student = unmatched_students[0]
-            else: 
-                to_break = 1
-        if to_break == 1: 
-            break
-
-        student_pref  = np.copy(student_preferences[student])
-        sch = np.copy(student_pref[next_student_choice[student]])
-        school = sch[1]
-        school_pref = np.copy(school_preferences[school])
-        school_current_match = np.copy(school_match[school])
-        
-        if (school_current_match[1] == -9999): 
-            stud = np.copy(school_pref[school_pref[:,1]==student][0])
-            school_match[school] = stud
-            student_match[student] = sch
-            next_student_choice[student] = next_student_choice[student] + 1 
-            unmatched_students.pop(0)
-        
-        else:
-            current_index = school_current_match[0]
-            stud = np.copy(school_pref[school_pref[:,1]==student][0])
-            candidate_index = stud[0]
-        
-            if candidate_index < current_index: 
-                student_match[school_current_match[1]] = [-9999,-9999]
-                school_match[school] = stud
-                student_match[student] = sch
-                next_student_choice[student] = next_student_choice[student] + 1
-                unmatched_students.pop(0)
-                unmatched_students.insert(0, school_current_match[1])
-        
-            else:
-                next_student_choice[student] = next_student_choice[student] + 1
-
-    return student_match, school_match
