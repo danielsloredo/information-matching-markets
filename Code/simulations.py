@@ -1361,7 +1361,7 @@ print(number_bad_samples)
 # Top Trading Cycles
 #
 ################################################################################
-
+'''
 n_students = 10
 n_schools = 10
 k=6
@@ -1385,5 +1385,329 @@ print('student_match')
 print(student_M[k])
 print('school_match')
 print(school_M[k])
+'''
+'''
+delta = 1 
+start = 3
+add = 97
+students = 100
+schools = 100
+repetitions = 100
+
+(average_nash_welfare_students, average_nash_welfare_schools, 
+average_oranks_students, average_oranks_schools,
+ranks_students, ranks_schools, 
+r_profile,
+average_leontief_u, average_cobb_stone_u, 
+average_qlinear_power_u, average_qlinear_square_u, 
+average_miscelaneous_1_u, average_miscelaneous_2_u,
+average_miscelaneous_3_u, average_exponential_u,
+average_s_shape_u) = onyc.mc_simulations_utility_ttc(delta, start, add, students, schools, repetitions)
+
+e_number_students = onyc.expected_number_students(r_profile, students)
+
+e_rank_partner = onyc.expected_rank_partner(r_profile, students)
+
+barWidth = 0.25
+for i in range(0, schools+1, 10):
+    y2 = e_number_students[i+1] 
+    x2 = [k for k in range(start, start+add+1)]
+    plt.figure(1)
+    plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+    plt.xlabel("Lenght of student's sub-list")
+    plt.ylabel("rk(i,k)")
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/expected_number_students_'+str(i+1)+'.png')
+    plt.clf()
+
+for i in range(0, schools+1, 10):
+    y2 = e_rank_partner[i+1] 
+    x2 = [k for k in range(start, start+add+1)]
+    plt.figure(2)
+    plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+    plt.xlabel("Lenght of student's sub-list")
+    plt.ylabel("rk(i,k)-rank")
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/expected_rank_'+str(i+1)+'.png')
+    plt.clf()
+
+for i in range(0, 10, 1):
+    y2 = e_rank_partner[i+1] 
+    x2 = [k for k in range(start, start+add+1)]
+    plt.figure(3)
+    plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+    plt.xlabel("Lenght of student's sub-list")
+    plt.ylabel("rk(i,k)-rank")
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/expected_rank_'+str(i+1)+'.png')
+    plt.clf()
+
+
+for interval_start in range(start, start+add, 10):
+    for k in range(interval_start, interval_start + 10, 1):
+        if k < start+add:
+            ranks = np.array(ranks_students[k])
+            sns.distplot(ranks, hist = False, kde = True,
+                        label = k)
+    plt.legend(title = 'Sub-list')
+    plt.title('Density Plot for Ranks')
+    plt.xlabel('Ranks')
+    plt.ylabel('Density')
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/density_ranks_students_'+str(interval_start)+'.png')
+    plt.clf()
+
+barWidth = 0.25
+
+lists2 = sorted(average_leontief_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(101)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_leontief_utility.png')
+
+lists2 = sorted(average_exponential_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(102)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_exponential_utility.png')
+
+barWidth = 0.25
+lists2 = sorted(average_s_shape_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(120)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_s_shape_utility.png')
+
+lists2 = sorted(average_qlinear_power_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(103)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_qlinear_power_utility.png')
+
+lists2 = sorted(average_qlinear_square_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(104)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_qlinear_square_utility.png')
+
+lists2 = sorted(average_miscelaneous_1_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(105)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_miscelaneous_1_utility.png')
+
+lists2 = sorted(average_miscelaneous_3_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(106)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_miscelaneous_3_utility.png')
+
+lists2 = sorted(average_nash_welfare_students.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(107)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_nash_social_welfare_students.png')
+
+lists2 = sorted(average_oranks_students.items()) 
+lists3 = sorted(average_oranks_schools.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br2 = np.arange(len(x2))
+br3 = [x + barWidth for x in br2]
+plt.figure(108)
+plt.bar(br2, y2, color = 'royalblue', label = 'Students', width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Schools', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Average ranks")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_oranks.png')
+'''
+
+delta = 1 
+start = 3
+add = 97
+students = 90
+schools = 100
+repetitions = 100
+
+(average_pareto_GS_matchings,
+average_s_non_pareto,
+average_nash_welfare_students, 
+average_oranks_students, 
+ranks_students,  
+r_profile,
+average_leontief_u, average_cobb_stone_u, 
+average_qlinear_power_u, average_qlinear_square_u, 
+average_miscelaneous_1_u, average_miscelaneous_2_u,
+average_miscelaneous_3_u, average_exponential_u,
+average_s_shape_u,
+average_nash_welfare_students_p,
+average_oranks_students_p,
+ranks_students_p, 
+r_profile_p,
+average_leontief_u_p, average_cobb_stone_u_p, 
+average_qlinear_power_u_p, average_qlinear_square_u_p, 
+average_miscelaneous_1_u_p, average_miscelaneous_2_u_p,
+average_miscelaneous_3_u_p, average_exponential_u_p,
+average_s_shape_u_p) = onyc.mc_simulations_pareto_optimality(delta, start, add, students, schools, repetitions)
+
+
+for interval_start in range(start, start+add, 10):
+    ranks = np.array(ranks_students[interval_start+2])
+    ranks_pareto = np.array(ranks_students_p[interval_start+2])
+    sns.distplot(ranks, hist = False, kde = True, label = 'GS')
+    sns.distplot(ranks_pareto, hist = False, kde = True, label = 'Pareto')
+    plt.legend(title = 'Sub-list')
+    plt.title('Density Plot for Ranks')
+    plt.xlabel('Ranks')
+    plt.ylabel('Density')
+    plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/density_ranks_students_'+str(interval_start+2)+'.png')
+    plt.clf()
+
+barWidth = 0.25
+
+lists2 = sorted(average_leontief_u.items())
+lists3 = sorted(average_leontief_u_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(101)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_leontief_utility.png')
+
+lists2 = sorted(average_exponential_u.items()) 
+lists3 = sorted(average_exponential_u_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(102)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_exponential_utility.png')
+
+lists2 = sorted(average_s_shape_u.items()) 
+lists3 = sorted(average_s_shape_u_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(103)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.ylabel("u(M)")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_s_shape_utility.png')
+
+lists2 = sorted(average_qlinear_power_u.items()) 
+lists3 = sorted(average_qlinear_power_u_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(104)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_qlinear_power_utility.png')
+
+lists2 = sorted(average_qlinear_square_u.items()) 
+lists3 = sorted(average_qlinear_square_u_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(105)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_qlinear_square_utility.png')
+
+lists2 = sorted(average_miscelaneous_1_u.items()) 
+lists3 = sorted(average_miscelaneous_1_u_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(106)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_miscelaneous_1_utility.png')
+
+lists2 = sorted(average_miscelaneous_3_u.items()) 
+lists3 = sorted(average_miscelaneous_3_u_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(107)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_miscelaneous_3_utility.png')
+
+lists2 = sorted(average_nash_welfare_students.items()) 
+lists3 = sorted(average_nash_welfare_students_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(108)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS',  width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_nash_social_welfare_students.png')
+
+lists2 = sorted(average_oranks_students.items()) 
+lists3 = sorted(average_oranks_students_p.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br3 = [x + barWidth for x in x2]
+plt.figure(109)
+plt.bar(x2, y2, color = 'royalblue', label = 'GS', width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Pareto', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Average ranks")
+plt.legend(loc="upper right")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_oranks.png')
+
+lists2 = sorted(average_pareto_GS_matchings.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(110)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Proportion of GS matchings that are pareto optimal")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_pareto_GS_matchings.png')
+
+lists2 = sorted(average_s_non_pareto.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(111)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Proportion of students in GS matching that are not pareto optimal")
+plt.savefig('D:/Documents/CDO/CDO_project/Figures_pareto/utility_imbalance_90_100/average_students_non_pareto.png')
 
 print('code succesfull')
