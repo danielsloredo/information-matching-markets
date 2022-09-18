@@ -1304,7 +1304,7 @@ def simulation_matching_increase_preferences_pareto(Delta, k, n_students, n_scho
     student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
     student_pareto_M[k], school_pareto_M[k] = make_pareto_optimal(student_M[k], school_M[k], student_pre[k], school_pre[k])
     pareto_Opt[k] = int(np.array_equal(student_M[k], student_pareto_M[k]))
-    student_pareto_prop[k] = (student_M[k][:, None] == student_pareto_M[k]).all(-1).any(-1).sum()/n_students
+    student_pareto_prop[k] = 1 - (student_M[k][:, None] == student_pareto_M[k]).all(-1).any(-1).sum()/n_students
     
     for j in range(1,additions+1):
         k_prev = k
@@ -1314,7 +1314,7 @@ def simulation_matching_increase_preferences_pareto(Delta, k, n_students, n_scho
         student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
         student_pareto_M[k], school_pareto_M[k] = make_pareto_optimal(student_M[k], school_M[k], student_pre[k], school_pre[k])
         pareto_Opt[k] = int(np.array_equal(student_M[k], student_pareto_M[k]))
-        student_pareto_prop[k] = (student_M[k][:, None] == student_pareto_M[k]).all(-1).any(-1).sum()/n_students
+        student_pareto_prop[k] = 1 - (student_M[k][:, None] == student_pareto_M[k]).all(-1).any(-1).sum()/n_students
 
     return student_M, school_M, student_pareto_M, school_pareto_M, pareto_Opt, student_pareto_prop
 
