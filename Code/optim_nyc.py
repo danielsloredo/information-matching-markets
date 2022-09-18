@@ -1167,32 +1167,11 @@ def mc_simulations_utility_ttc(Delta, sublist, additions, n_students, n_schools,
 ## Pareto Optimality in Gale Shapley output
 ##################################################################
 
-def trade_in_free(student_match, school_match, student_prefs):
-    school_mat = np.array(school_match[:, 1]) 
-    unmatched_schools = np.where(school_mat == -9999)
-    trade_free = True
-    for student in range(student_match.shape[0]):
-        student_preferences = student_prefs[student]
-        for school in unmatched_schools:
-            potential_match = student_preferences[student_preferences[:, 1] == school]
-            if potential_match.size>0:
-                match = potential_match[0]
-                if (student_match[student, 0] > match[0]) or (student_match[student, 0]==-9999):
-                    trade_free = False 
-                    break 
-        if trade_free == False: 
-            break
-    #print('el match es trade free: ' + str(trade_free))
-    return trade_free
-
 def find_coalition(candidate_studs, next_choice, stud_preferences, student_mat, school_mat):
     potential_match_student = np.copy(student_mat)
 
     visited = set()
     cycles = []
-
-    #print('los estudiandes para checar coalition')
-    #print(candidate_studs)
 
     for start_student in candidate_studs:
         
@@ -1230,61 +1209,6 @@ def find_coalition(candidate_studs, next_choice, stud_preferences, student_mat, 
         else:
             visited |= set(path_students)
     return cycles, potential_match_student
-
-def coalition_free(student_match, school_match, student_prefs):   
-    coalition_f = True
-
-    n_students = student_match.shape[0]
-    n_schools = school_match.shape[0]
-
-    candidate_students = list(range(n_students))
-    candidate_schools = list(range(n_schools))
-
-    next_student_choice = [0] * n_students
-
-    students_for_iteration = list(candidate_students)
-    for student in students_for_iteration:
-        #print('candidate students')
-        #print(candidate_students)
-        #print('candidate schools')
-        #print(candidate_schools)
-        #print('la eleccion de los candidatos')
-        #print(next_student_choice)
-        student_preferences = student_prefs[student]
-        preferred_school = student_preferences[next_student_choice[student]][1]
-        while (preferred_school not in candidate_schools) and (next_student_choice[student] < student_preferences.shape[0]-1):
-            next_student_choice[student] += 1
-            preferred_school = student_preferences[next_student_choice[student]][1]
-        if student_match[student][1] == preferred_school:
-            candidate_students.remove(student)
-            candidate_schools.remove(preferred_school)
-            #print('removed student  '+ str(student) + '   and school  ' + str(preferred_school))
-        else: 
-            coalitions, p_student_match = find_coalition(candidate_students, next_student_choice, student_prefs, student_match, school_match)
-            #print('los cyclos son')
-            #print(coalitions)
-            if len(coalitions)>0:
-                for cycle in coalitions:
-                    if len(cycle)>1:
-                        coalition_f = False
-        if coalition_f == False:
-            break
-    
-    #print('el match es coalition f: ' + str(coalition_f))
-    return coalition_f
-
-def is_pareto_optimal(student_match, school_match, student_prefs):
-    
-    pareto = False
-
-    t_in_free = trade_in_free(student_match, school_match, student_prefs)
-
-    if t_in_free == True: 
-        c_free = coalition_free(student_match, school_match, student_prefs)
-        if c_free == True:
-            pareto = True
-        
-    return pareto
 
 def trade_in(student_match, school_match, student_prefs, school_prefs):
     school_mat = np.array(school_match[:, 1]) 
@@ -1371,12 +1295,16 @@ def simulation_matching_increase_preferences_pareto(Delta, k, n_students, n_scho
     school_M = {}
     student_pareto_M = {}
     school_pareto_M = {}
+
+    pareto_Opt = {}
+    student_pareto_prop = {}
     
     print('working on first sublist')
     student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
     student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
-    
     student_pareto_M[k], school_pareto_M[k] = make_pareto_optimal(student_M[k], school_M[k], student_pre[k], school_pre[k])
+    pareto_Opt[k] = int(np.array_equal(student_M[k], student_pareto_M[k]))
+    student_pareto_prop[k] = (student_M[k][:, None] == student_pareto_M[k]).all(-1).any(-1).sum()/n_students
     
     for j in range(1,additions+1):
         k_prev = k
@@ -1384,7 +1312,175 @@ def simulation_matching_increase_preferences_pareto(Delta, k, n_students, n_scho
         print('working on sublist size: ' + str(k))
         student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
         student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
-        
         student_pareto_M[k], school_pareto_M[k] = make_pareto_optimal(student_M[k], school_M[k], student_pre[k], school_pre[k])
+        pareto_Opt[k] = int(np.array_equal(student_M[k], student_pareto_M[k]))
+        student_pareto_prop[k] = (student_M[k][:, None] == student_pareto_M[k]).all(-1).any(-1).sum()/n_students
 
-    return student_M, school_M, student_pareto_M, school_pareto_M
+    return student_M, school_M, student_pareto_M, school_pareto_M, pareto_Opt, student_pareto_prop
+
+
+
+def mc_simulations_pareto_optimality(Delta, sublist, additions, n_students, n_schools, iterations):
+    '''
+    '''
+    beg = sublist + Delta
+    end = sublist+Delta*additions + Delta
+    
+    average_paretoGS_matchings = {x : 0 for x in range(sublist, end, Delta)}
+    average_students_non_pareto = {x : 0 for x in range(sublist, end, Delta)}
+
+    average_nash_welfare_students = {x : 0 for x in range(sublist, end, Delta)}
+    average_leontief_utility = {x : 0 for x in range(sublist, end, Delta)} 
+    average_cobb_stone_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_qlinear_power_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_qlinear_square_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_1_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_2_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_3_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_exponential_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_s_shape_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
+    ranks_students = {x : [] for x in range(sublist, end, Delta)}
+    r_profile = {x : np.zeros(n_schools+1) for x in range(sublist, end, Delta)}
+
+    average_nash_welfare_students_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_leontief_utility_p = {x : 0 for x in range(sublist, end, Delta)} 
+    average_cobb_stone_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_qlinear_power_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_qlinear_square_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_1_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_2_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_3_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_exponential_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_s_shape_utility_p = {x : 0 for x in range(sublist, end, Delta)}
+    average_oranks_students_p = {x : 0 for x in range(sublist, end, Delta)}
+    ranks_students_p = {x : [] for x in range(sublist, end, Delta)}
+    r_profile_p = {x : np.zeros(n_schools+1) for x in range(sublist, end, Delta)}
+
+
+    for i in range(iterations):
+        print('Working on iteration: ' + str(i))
+
+        student_Match, school_Match, student_pareto_Match, school_pareto_Match, pareto_m, student_not_pareto = simulation_matching_increase_preferences_pareto(Delta, sublist, n_students, n_schools, additions)
+
+        nash_welfare_students, nash_welfare_schools = nash_welfare(student_Match, school_Match)
+        nash_welfare_students_pareto, nash_welfare_schools_pareto= nash_welfare(student_pareto_Match, school_pareto_Match)
+        mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools = average_rank_match(student_Match, school_Match)
+        mean_original_ranks_students_pareto, mean_original_ranks_schools_pareto, or_students_pareto, or_schools_pareto = average_rank_match(student_pareto_Match, school_pareto_Match)
+        ranks_profile = rank_profile(student_Match, school_Match)
+        ranks_profile_pareto = rank_profile(student_pareto_Match, school_pareto_Match)
+        (leontief_u, cobb_stone_u, qlinear_power_u, qlinear_square_u, 
+        miscelaneous_1_u, miscelaneous_2_u, miscelaneous_3_u,
+        exponential_u, s_shape_u) = utility_functions(student_Match, school_Match, ranks_profile)
+        (leontief_u_p, cobb_stone_u_p, qlinear_power_u_p, qlinear_square_u_p, 
+        miscelaneous_1_u_p, miscelaneous_2_u_p, miscelaneous_3_u_p,
+        exponential_u_p, s_shape_u_p) = utility_functions(student_pareto_Match, school_pareto_Match, ranks_profile_pareto)
+
+        #Pareto proportions
+        for size, value in pareto_m.items():
+            average_paretoGS_matchings[size] += value/iterations
+        
+        for size, value in student_not_pareto.items():
+            average_students_non_pareto[size] += value/iterations
+
+        #Students
+        for size, value in nash_welfare_students.items():
+            average_nash_welfare_students[size] += value/iterations
+
+        for size, value in mean_original_ranks_students.items():
+            average_oranks_students[size] += value/iterations 
+
+        for size, ary in or_students.items():
+            ranks_students[size].extend(ary)
+        
+        for size, rk_profile in ranks_profile.items():
+            r_profile[size] = r_profile[size] + rk_profile/iterations  
+        
+        for size, value in leontief_u.items():
+            average_leontief_utility[size] += value/iterations
+
+        for size, value in cobb_stone_u.items():
+            average_cobb_stone_utility[size] += value/iterations
+
+        for size, value in qlinear_power_u.items():
+            average_qlinear_power_utility[size] += value/iterations
+
+        for size, value in qlinear_square_u.items():
+            average_qlinear_square_utility[size] += value/iterations
+
+        for size, value in miscelaneous_1_u.items():
+            average_miscelaneous_1_utility[size] += value/iterations
+        
+        for size, value in miscelaneous_2_u.items():
+            average_miscelaneous_2_utility[size] += value/iterations
+
+        for size, value in miscelaneous_3_u.items():
+            average_miscelaneous_3_utility[size] += value/iterations
+        
+        for size, value in exponential_u.items():
+            average_exponential_utility[size] += value/iterations
+
+        for size, value in s_shape_u.items():
+            average_s_shape_utility[size] += value/iterations 
+
+        #Students pareto
+        for size, value in nash_welfare_students_pareto.items():
+            average_nash_welfare_students_p[size] += value/iterations
+
+        for size, value in mean_original_ranks_students_pareto.items():
+            average_oranks_students_p[size] += value/iterations 
+
+        for size, ary in or_students_pareto.items():
+            ranks_students_p[size].extend(ary)
+        
+        for size, rk_profile in ranks_profile_pareto.items():
+            r_profile_p[size] = r_profile[size] + rk_profile/iterations  
+        
+        for size, value in leontief_u_p.items():
+            average_leontief_utility_p[size] += value/iterations
+
+        for size, value in cobb_stone_u_p.items():
+            average_cobb_stone_utility_p[size] += value/iterations
+
+        for size, value in qlinear_power_u_p.items():
+            average_qlinear_power_utility_p[size] += value/iterations
+
+        for size, value in qlinear_square_u_p.items():
+            average_qlinear_square_utility_p[size] += value/iterations
+
+        for size, value in miscelaneous_1_u_p.items():
+            average_miscelaneous_1_utility_p[size] += value/iterations
+        
+        for size, value in miscelaneous_2_u_p.items():
+            average_miscelaneous_2_utility_p[size] += value/iterations
+
+        for size, value in miscelaneous_3_u_p.items():
+            average_miscelaneous_3_utility_p[size] += value/iterations
+        
+        for size, value in exponential_u_p.items():
+            average_exponential_utility_p[size] += value/iterations
+
+        for size, value in s_shape_u_p.items():
+            average_s_shape_utility_p[size] += value/iterations 
+
+
+    return (average_paretoGS_matchings,
+    average_students_non_pareto,
+    average_nash_welfare_students, 
+    average_oranks_students, 
+    ranks_students, 
+    r_profile, 
+    average_leontief_utility, average_cobb_stone_utility, 
+    average_qlinear_power_utility, average_qlinear_square_utility, 
+    average_miscelaneous_1_utility, average_miscelaneous_2_utility,
+    average_miscelaneous_3_utility, average_exponential_utility,
+    average_s_shape_utility,
+    average_nash_welfare_students_p, 
+    average_oranks_students_p, 
+    ranks_students_p, 
+    r_profile_p, 
+    average_leontief_utility_p, average_cobb_stone_utility_p, 
+    average_qlinear_power_utility_p, average_qlinear_square_utility_p, 
+    average_miscelaneous_1_utility_p, average_miscelaneous_2_utility_p,
+    average_miscelaneous_3_utility_p, average_exponential_utility_p,
+    average_s_shape_utility_p)
