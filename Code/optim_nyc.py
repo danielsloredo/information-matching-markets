@@ -1177,7 +1177,7 @@ def trade_in_free(student_match, school_match, student_prefs):
             potential_match = student_preferences[student_preferences[:, 1] == school]
             if potential_match.size>0:
                 match = potential_match[0]
-                if student_match[student, 0] > match[0]:
+                if (student_match[student, 0] > match[0]) or (student_match[student, 0]==-9999):
                     trade_free = False 
                     break 
         if trade_free == False: 
@@ -1185,7 +1185,9 @@ def trade_in_free(student_match, school_match, student_prefs):
     #print('el match es trade free: ' + str(trade_free))
     return trade_free
 
-def find_coalition(candidate_studs, next_choice, stud_preferences, school_mat):
+def find_coalition(candidate_studs, next_choice, stud_preferences, student_mat, school_mat):
+    potential_match_student = np.copy(student_mat)
+
     visited = set()
     cycles = []
 
@@ -1199,7 +1201,8 @@ def find_coalition(candidate_studs, next_choice, stud_preferences, school_mat):
 
         path_students = [start_student]
         student_pref  = stud_preferences[start_student]
-        school = student_pref[next_choice[start_student]][1]
+        potential_match_student[start_student] = student_pref[next_choice[start_student]]
+        school = potential_match_student[start_student][1]
         path_schools = [school]
         next_student = school_mat[school][1]
 
@@ -1211,7 +1214,8 @@ def find_coalition(candidate_studs, next_choice, stud_preferences, school_mat):
             else:
                 path_students.append(next_student)
                 student_pref  = stud_preferences[next_student]
-                next_school = student_pref[next_choice[next_student]][1]
+                potential_match_student[next_student] = student_pref[next_choice[next_student]]
+                next_school = potential_match_student[next_student][1]
                 path_schools.append(next_school)
                 next_student = school_mat[next_school][1]
         
@@ -1225,7 +1229,7 @@ def find_coalition(candidate_studs, next_choice, stud_preferences, school_mat):
             visited |= set(path_students)
         else:
             visited |= set(path_students)
-    return cycles
+    return cycles, potential_match_student
 
 def coalition_free(student_match, school_match, student_prefs):   
     coalition_f = True
@@ -1248,7 +1252,7 @@ def coalition_free(student_match, school_match, student_prefs):
         #print(next_student_choice)
         student_preferences = student_prefs[student]
         preferred_school = student_preferences[next_student_choice[student]][1]
-        while (preferred_school not in candidate_schools) and (next_student_choice[student] < student_preferences.shape[0]):
+        while (preferred_school not in candidate_schools) and (next_student_choice[student] < student_preferences.shape[0]-1):
             next_student_choice[student] += 1
             preferred_school = student_preferences[next_student_choice[student]][1]
         if student_match[student][1] == preferred_school:
@@ -1256,7 +1260,7 @@ def coalition_free(student_match, school_match, student_prefs):
             candidate_schools.remove(preferred_school)
             #print('removed student  '+ str(student) + '   and school  ' + str(preferred_school))
         else: 
-            coalitions = find_coalition(candidate_students, next_student_choice, student_prefs, school_match)
+            coalitions, p_student_match = find_coalition(candidate_students, next_student_choice, student_prefs, student_match, school_match)
             #print('los cyclos son')
             #print(coalitions)
             if len(coalitions)>0:
@@ -1268,7 +1272,6 @@ def coalition_free(student_match, school_match, student_prefs):
     
     #print('el match es coalition f: ' + str(coalition_f))
     return coalition_f
-
 
 def is_pareto_optimal(student_match, school_match, student_prefs):
     
@@ -1283,6 +1286,78 @@ def is_pareto_optimal(student_match, school_match, student_prefs):
         
     return pareto
 
+def trade_in(student_match, school_match, student_prefs, school_prefs):
+    school_mat = np.array(school_match[:, 1]) 
+    unmatched_schools = np.where(school_mat == -9999)
+    new_student_match = np.copy(student_match)
+    new_school_match = np.copy(school_match)
+    
+    for student in range(new_student_match.shape[0]):
+        student_preferences = student_prefs[student]
+        for school in unmatched_schools:
+            potential_match = student_preferences[student_preferences[:, 1] == school]
+            if potential_match.size>0:
+                match = potential_match[0]
+                if (new_student_match[student, 0] > match[0]) or (new_student_match[student, 0]==-9999):
+                    new_student_match[student] = match
+                    school_preferences = school_prefs[school]
+                    school_new_match = school_preferences[school_preferences[:, 1] == student]
+                    new_school_match[school] = school_new_match[0]
+    return new_student_match, new_school_match
+
+
+def coalition_trade(student_match, school_match, student_prefs, school_prefs):   
+
+    n_students = student_match.shape[0]
+    n_schools = school_match.shape[0]
+
+    candidate_students = list(range(n_students))
+    candidate_schools = list(range(n_schools))
+
+    next_student_choice = [0] * n_students
+
+    count = 0
+    while candidate_students:
+        
+        if (count >=1) and (candidate_students == students_for_iteration):
+            if np.all(student_match[candidate_students] == -9999):
+                break
+
+        students_for_iteration = list(candidate_students)
+        for student in students_for_iteration:
+            student_preferences = student_prefs[student]
+            preferred_school = student_preferences[next_student_choice[student]][1]
+            while (preferred_school not in candidate_schools) and (next_student_choice[student] < student_preferences.shape[0]-1):
+                next_student_choice[student] += 1
+                preferred_school = student_preferences[next_student_choice[student]][1]
+            if student_match[student][1] == preferred_school:
+                candidate_students.remove(student)
+                candidate_schools.remove(preferred_school)
+                
+            else: 
+                coalitions, p_student_match = find_coalition(candidate_students, next_student_choice, student_prefs, student_match, school_match)
+                
+                if len(coalitions)>0:
+                    for cycle in coalitions:
+                        if len(cycle)>1:
+                            for student in cycle: 
+                                match = p_student_match[student]
+                                school = match[1]
+                                student_match[student] = match
+                                school_pre = school_prefs[school]
+                                school_match[school] = np.copy(school_pre[school_pre[:,1] == student])
+        count += 1
+   
+    return student_match, school_match
+
+def make_pareto_optimal(student_match, school_match, student_prefs, school_prefs):
+
+    n_student_match, n_school_match = trade_in(student_match, school_match, student_prefs, school_prefs)
+    
+    new_stud_match, new_sch_match = coalition_trade(n_student_match, n_school_match, student_prefs, school_prefs)
+    
+    return new_stud_match, new_sch_match
+
 
 def simulation_matching_increase_preferences_pareto(Delta, k, n_students, n_schools, additions):
     '''
@@ -1294,22 +1369,22 @@ def simulation_matching_increase_preferences_pareto(Delta, k, n_students, n_scho
     school_pre = {}
     student_M = {}
     school_M = {}
-    pareto_Opt = {}
+    student_pareto_M = {}
+    school_pareto_M = {}
     
+    print('working on first sublist')
     student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
     student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
-    #print('Las preferencias de los estudiantes son: ')
-    #print(student_pre[k])
-    pareto_Opt[k] = is_pareto_optimal(student_M[k], school_M[k], student_pre[k])
+    
+    student_pareto_M[k], school_pareto_M[k] = make_pareto_optimal(student_M[k], school_M[k], student_pre[k], school_pre[k])
     
     for j in range(1,additions+1):
         k_prev = k
         k = k + Delta
-        #print('working on sublist size: ' + str(k))
+        print('working on sublist size: ' + str(k))
         student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
         student_M[k], school_M[k] = gale_shapley_modified(n_students, n_schools, student_pre[k], school_pre[k])
-        #print('Las preferencias de los estudiantes son: ')
-        #print(student_pre[k])
-        pareto_Opt[k] = is_pareto_optimal(student_M[k], school_M[k], student_pre[k])
+        
+        student_pareto_M[k], school_pareto_M[k] = make_pareto_optimal(student_M[k], school_M[k], student_pre[k], school_pre[k])
 
-    return student_M, school_M, pareto_Opt
+    return student_M, school_M, student_pareto_M, school_pareto_M
