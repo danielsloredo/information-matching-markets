@@ -1535,6 +1535,10 @@ plt.legend(loc="upper right")
 plt.savefig('D:/Documents/CDO/CDO_project/Figures_ttc/utility/average_oranks.png')
 '''
 
+'''
+###############################################################################
+# From gale shapley to pareto optimality
+###############################################################################
 delta = 1 
 start = 3
 add = 97
@@ -1711,7 +1715,126 @@ plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("Proportion of students in GS matching that are not pareto optimal")
 plt.savefig(path+'average_students_non_pareto.png')
+'''
 
+####################################################################################
+# Serial Dictatorship
+####################################################################################
+
+delta = 1 
+start = 3
+add = 97
+students = 100
+schools = 100
+repetitions = 100
+
+path = 'D:/Documents/CDO/CDO_project/Figures_sd/utility/'
+
+(average_nash_welfare_students, average_nash_welfare_schools, 
+average_oranks_students, average_oranks_schools,
+ranks_students, ranks_schools, 
+r_profile,
+average_leontief_u, average_cobb_stone_u, 
+average_qlinear_power_u, average_qlinear_square_u, 
+average_miscelaneous_1_u, average_miscelaneous_2_u,
+average_miscelaneous_3_u, average_exponential_u,
+average_s_shape_u) = onyc.mc_simulations_utility_sd(delta, start, add, students, schools, repetitions)
+
+
+for interval_start in range(start, start+add, 10):
+    for k in range(interval_start, interval_start + 10, 1):
+        if k < start+add:
+            ranks = np.array(ranks_students[k])
+            sns.distplot(ranks, hist = False, kde = True,
+                        label = k)
+    plt.legend(title = 'Sub-list')
+    plt.title('Density Plot for Ranks')
+    plt.xlabel('Ranks')
+    plt.ylabel('Density')
+    plt.savefig(path+'density_ranks_students_'+str(interval_start)+'.png')
+    plt.clf()
+
+
+barWidth = 0.25
+
+lists2 = sorted(average_leontief_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(101)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig(path+'average_leontief_utility.png')
+
+lists2 = sorted(average_exponential_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(102)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig(path+'average_exponential_utility.png')
+
+barWidth = 0.25
+lists2 = sorted(average_s_shape_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(120)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig(path+'average_s_shape_utility.png')
+
+lists2 = sorted(average_qlinear_power_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(103)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig(path+'average_qlinear_power_utility.png')
+
+lists2 = sorted(average_qlinear_square_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(104)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig(path+'average_qlinear_square_utility.png')
+
+lists2 = sorted(average_miscelaneous_1_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(105)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig(path+'average_miscelaneous_1_utility.png')
+
+lists2 = sorted(average_miscelaneous_3_u.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(106)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("u(M)")
+plt.savefig(path+'average_miscelaneous_3_utility.png')
+
+lists2 = sorted(average_nash_welfare_students.items()) 
+x2, y2 = zip(*lists2)
+plt.figure(107)
+plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.savefig(path+'average_nash_social_welfare_students.png')
+
+lists2 = sorted(average_oranks_students.items()) 
+lists3 = sorted(average_oranks_schools.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br2 = np.arange(len(x2))
+br3 = [x + barWidth for x in br2]
+plt.figure(108)
+plt.bar(br2, y2, color = 'royalblue', label = 'Students', width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Schools', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Average ranks")
+plt.legend(loc="upper right")
+plt.savefig(path+'average_oranks.png')
 
 
 print('code succesfull')
