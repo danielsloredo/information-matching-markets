@@ -1484,3 +1484,169 @@ def mc_simulations_pareto_optimality(Delta, sublist, additions, n_students, n_sc
     average_miscelaneous_1_utility_p, average_miscelaneous_2_utility_p,
     average_miscelaneous_3_utility_p, average_exponential_utility_p,
     average_s_shape_utility_p)
+
+
+
+##############################################################################################################################
+##############################################################################################################################
+## Serial dictatorship
+##
+#############################################################################################################################
+#############################################################################################################################
+
+def serial_dictatorship(n_students, n_schools, order_selection, student_preferences, school_preferences):
+    
+    unmatched_schools = list(range(n_schools))
+
+    student_match = np.full((n_students, 2), -9999, dtype=int)
+    school_match = np.full((n_schools, 2), -9999, dtype=int)
+
+    next_student_choice = [0] * n_students
+
+    for student in order_selection:
+        student_prefs = student_preferences[student]
+        matched = 0
+        while matched == 0 and next_student_choice[student] <= student_prefs.shape[0]:
+            school_rank = student_prefs[next_student_choice[student]]
+            sch = school_rank[1]
+            if sch in unmatched_schools: 
+                student_match[student] = school_rank
+                school_prefs = school_preferences[sch]
+                school_match[sch] = school_prefs[school_prefs[:,1]==student]
+                unmatched_schools.remove(sch)
+                matched = 1
+            
+            else:
+                next_student_choice[student] += 1            
+    
+    return student_match, school_match
+
+def simulation_matching_increase_preferences_sd(Delta, k, n_students, n_schools, additions):
+    '''
+    Simulates the matching outcome under diferent preference list sizes where we only add new preferences
+    by using the ttc algorithm.
+    '''
+    student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
+    rng = np.random.default_rng()
+    student_order_selection = rng.permutation(n_students)
+
+    student_pre = {}
+    school_pre = {}
+    student_M = {}
+    school_M = {}
+    
+    student_pre[k], school_pre[k] = restricted_market(k, student_f_pref, school_f_pref)
+    student_M[k], school_M[k] = serial_dictatorship(n_students, n_schools, student_order_selection, student_pre[k], school_pre[k])
+    
+    for j in range(1,additions+1):
+        k_prev = k
+        k = k + Delta
+        print('working on sublist size: ' + str(k))
+        student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
+        student_M[k], school_M[k] = serial_dictatorship(n_students, n_schools, student_order_selection, student_pre[k], school_pre[k])
+        
+    return student_M, school_M, student_f_pref, school_f_pref
+
+
+def mc_simulations_utility_sd(Delta, sublist, additions, n_students, n_schools, iterations):
+    '''
+    Function to simulate the behaviour of different utility functions on the stable match
+    outcome with different sublist sizes.
+    '''
+    beg = sublist + Delta
+    end = sublist+Delta*additions + Delta
+    
+    average_nash_welfare_students = {x : 0 for x in range(sublist, end, Delta)}
+    average_nash_welfare_schools = {x : 0 for x in range(sublist, end, Delta)}
+
+    average_leontief_utility = {x : 0 for x in range(sublist, end, Delta)} 
+    average_cobb_stone_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_qlinear_power_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_qlinear_square_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_1_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_2_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_miscelaneous_3_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_exponential_utility = {x : 0 for x in range(sublist, end, Delta)}
+    average_s_shape_utility = {x : 0 for x in range(sublist, end, Delta)}
+    
+
+    average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
+    average_oranks_schools = {x : 0 for x in range(sublist, end, Delta)}
+    ranks_students = {x : [] for x in range(sublist, end, Delta)}
+    ranks_schools = {x : [] for x in range(sublist, end, Delta)}
+    r_profile = {x : np.zeros(n_schools+1) for x in range(sublist, end, Delta)}
+
+
+    for i in range(iterations):
+        print('Working on iteration: ' + str(i))
+
+        student_Match, school_Match, student_original_preferences, school_original_preferences = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions)
+
+        nash_welfare_students, nash_welfare_schools = nash_welfare(student_Match, school_Match)
+        mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools = average_rank_match(student_Match, school_Match)
+        ranks_profile = rank_profile(student_Match, school_Match)
+        (leontief_u, cobb_stone_u, qlinear_power_u, qlinear_square_u, 
+        miscelaneous_1_u, miscelaneous_2_u, miscelaneous_3_u,
+        exponential_u, s_shape_u) = utility_functions(student_Match, school_Match, ranks_profile)
+
+
+        #Students
+        for size, value in nash_welfare_students.items():
+            average_nash_welfare_students[size] += value/iterations
+
+        for size, value in mean_original_ranks_students.items():
+            average_oranks_students[size] += value/iterations 
+
+        for size, ary in or_students.items():
+            ranks_students[size].extend(ary)
+        
+        for size, rk_profile in ranks_profile.items():
+            r_profile[size] = r_profile[size] + rk_profile/iterations  
+        
+        for size, value in leontief_u.items():
+            average_leontief_utility[size] += value/iterations
+
+        for size, value in cobb_stone_u.items():
+            average_cobb_stone_utility[size] += value/iterations
+
+        for size, value in qlinear_power_u.items():
+            average_qlinear_power_utility[size] += value/iterations
+
+        for size, value in qlinear_square_u.items():
+            average_qlinear_square_utility[size] += value/iterations
+
+        for size, value in miscelaneous_1_u.items():
+            average_miscelaneous_1_utility[size] += value/iterations
+        
+        for size, value in miscelaneous_2_u.items():
+            average_miscelaneous_2_utility[size] += value/iterations
+
+        for size, value in miscelaneous_3_u.items():
+            average_miscelaneous_3_utility[size] += value/iterations
+        
+        for size, value in exponential_u.items():
+            average_exponential_utility[size] += value/iterations
+
+        for size, value in s_shape_u.items():
+            average_s_shape_utility[size] += value/iterations 
+
+        #Schools
+
+        for size, value in nash_welfare_schools.items():
+            average_nash_welfare_schools[size] += value/iterations
+
+        for size, value in mean_original_ranks_schools.items():
+            average_oranks_schools[size] += value/iterations
+
+        for size, ary in or_schools.items():
+            ranks_schools[size].extend(ary)
+
+    return (average_nash_welfare_students, average_nash_welfare_schools, 
+    average_oranks_students, average_oranks_schools,
+    ranks_students, ranks_schools, 
+    r_profile, 
+    average_leontief_utility, average_cobb_stone_utility, 
+    average_qlinear_power_utility, average_qlinear_square_utility, 
+    average_miscelaneous_1_utility, average_miscelaneous_2_utility,
+    average_miscelaneous_3_utility, average_exponential_utility,
+    average_s_shape_utility)
