@@ -1506,7 +1506,7 @@ def serial_dictatorship(n_students, n_schools, order_selection, student_preferen
     for student in order_selection:
         student_prefs = student_preferences[student]
         matched = 0
-        while matched == 0 and next_student_choice[student] <= student_prefs.shape[0]:
+        while matched == 0 and next_student_choice[student] < student_prefs.shape[0]:
             school_rank = student_prefs[next_student_choice[student]]
             sch = school_rank[1]
             if sch in unmatched_schools: 
@@ -1529,6 +1529,7 @@ def simulation_matching_increase_preferences_sd(Delta, k, n_students, n_schools,
     student_f_pref, school_f_pref = marriage_market_preference_lists(n_students, n_schools)
     rng = np.random.default_rng()
     student_order_selection = rng.permutation(n_students)
+    #student_order_selection = [i for i in range(n_students)]
 
     student_pre = {}
     school_pre = {}
@@ -1541,12 +1542,23 @@ def simulation_matching_increase_preferences_sd(Delta, k, n_students, n_schools,
     for j in range(1,additions+1):
         k_prev = k
         k = k + Delta
-        print('working on sublist size: ' + str(k))
+        #print('working on sublist size: ' + str(k))
         student_pre[k], school_pre[k] = increase_preference_sublist(Delta, student_pre[k_prev], school_pre[k_prev], student_f_pref, school_f_pref)
         student_M[k], school_M[k] = serial_dictatorship(n_students, n_schools, student_order_selection, student_pre[k], school_pre[k])
         
-    return student_M, school_M, student_f_pref, school_f_pref
+    return student_M, school_M, student_f_pref, school_f_pref, student_order_selection
 
+def reorder(arr,index, n):
+    arr2 = np.copy(arr)
+ 
+    temp = [0] * n
+ 
+    # arr[i] should be
+        # present at index[i] index
+    for i in range(0,n):
+        temp[i] = arr2[index[i]]
+
+    return np.array(temp)
 
 def mc_simulations_utility_sd(Delta, sublist, additions, n_students, n_schools, iterations):
     '''
@@ -1573,6 +1585,7 @@ def mc_simulations_utility_sd(Delta, sublist, additions, n_students, n_schools, 
     average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
     average_oranks_schools = {x : 0 for x in range(sublist, end, Delta)}
     ranks_students = {x : [] for x in range(sublist, end, Delta)}
+    rank_student_i = {x : np.zeros(n_students) for x in range(sublist, end, Delta)}
     ranks_schools = {x : [] for x in range(sublist, end, Delta)}
     r_profile = {x : np.zeros(n_schools+1) for x in range(sublist, end, Delta)}
 
@@ -1580,7 +1593,7 @@ def mc_simulations_utility_sd(Delta, sublist, additions, n_students, n_schools, 
     for i in range(iterations):
         print('Working on iteration: ' + str(i))
 
-        student_Match, school_Match, student_original_preferences, school_original_preferences = simulation_matching_increase_preferences(Delta, sublist, n_students, n_schools, additions)
+        student_Match, school_Match, student_original_preferences, school_original_preferences, student_order = simulation_matching_increase_preferences_sd(Delta, sublist, n_students, n_schools, additions)
 
         nash_welfare_students, nash_welfare_schools = nash_welfare(student_Match, school_Match)
         mean_original_ranks_students, mean_original_ranks_schools, or_students, or_schools = average_rank_match(student_Match, school_Match)
@@ -1599,6 +1612,8 @@ def mc_simulations_utility_sd(Delta, sublist, additions, n_students, n_schools, 
 
         for size, ary in or_students.items():
             ranks_students[size].extend(ary)
+            reorder_ary = np.array(reorder(ary,student_order,n_students))
+            rank_student_i[size] = rank_student_i[size] + reorder_ary/iterations
         
         for size, rk_profile in ranks_profile.items():
             r_profile[size] = r_profile[size] + rk_profile/iterations  
@@ -1643,7 +1658,7 @@ def mc_simulations_utility_sd(Delta, sublist, additions, n_students, n_schools, 
 
     return (average_nash_welfare_students, average_nash_welfare_schools, 
     average_oranks_students, average_oranks_schools,
-    ranks_students, ranks_schools, 
+    ranks_students, ranks_schools, rank_student_i, 
     r_profile, 
     average_leontief_utility, average_cobb_stone_utility, 
     average_qlinear_power_utility, average_qlinear_square_utility, 
