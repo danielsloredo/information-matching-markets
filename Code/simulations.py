@@ -6,6 +6,8 @@ import real_change_on_rank as rc
 import nyc_school_market as nyc
 import optim_nyc as onyc
 import nyc_counselors as cnyc
+import approx_rank as apr
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json
@@ -1716,13 +1718,15 @@ plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("Proportion of students in GS matching that are not pareto optimal")
 plt.savefig(path+'average_students_non_pareto.png')
 '''
-
+'''
 ####################################################################################
 # Serial Dictatorship
 ####################################################################################
+from fitter import Fitter, get_common_distributions, get_distributions
+import pickle
 
 delta = 1 
-start = 3
+start = 1
 add = 97
 students = 100
 schools = 100
@@ -1732,7 +1736,7 @@ path = 'D:/Documents/CDO/CDO_project/Figures_sd/utility/'
 
 (average_nash_welfare_students, average_nash_welfare_schools, 
 average_oranks_students, average_oranks_schools,
-ranks_students, ranks_schools, 
+ranks_students, ranks_schools, rank_studenti,
 r_profile,
 average_leontief_u, average_cobb_stone_u, 
 average_qlinear_power_u, average_qlinear_square_u, 
@@ -1754,6 +1758,16 @@ for interval_start in range(start, start+add, 10):
     plt.savefig(path+'density_ranks_students_'+str(interval_start)+'.png')
     plt.clf()
 
+for interval_start in range(start, start+add, 10):
+    if interval_start < start+add:
+        ranks = np.array(ranks_students[interval_start])
+        sns.distplot(ranks, hist = True, kde = True,
+                        label = k)
+    plt.legend(title = 'Sub-list')
+    plt.title('Histogram for Ranks')
+    plt.xlabel('Ranks')
+    plt.savefig(path+'hist_ranks_students_'+str(interval_start)+'.png')
+    plt.clf()
 
 barWidth = 0.25
 
@@ -1835,6 +1849,98 @@ plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("Average ranks")
 plt.legend(loc="upper right")
 plt.savefig(path+'average_oranks.png')
+'''
 
+
+####################################################################################
+# Approximation with random process
+####################################################################################
+
+delta = 1 
+start = 1
+add = 14
+students = 15
+schools = 15
+repetitions = 1000
+
+path = 'D:/Documents/CDO/CDO_project/Figures_approx/master_equation/15_15/'
+print('Working on SD')
+(average_nash_welfare_students, average_nash_welfare_schools, 
+average_oranks_students, average_oranks_schools,
+ranks_students, ranks_schools, rank_student_i,
+r_profile,
+average_leontief_u, average_cobb_stone_u, 
+average_qlinear_power_u, average_qlinear_square_u, 
+average_miscelaneous_1_u, average_miscelaneous_2_u,
+average_miscelaneous_3_u, average_exponential_u,
+average_s_shape_u) = onyc.mc_simulations_utility_sd(delta, start, add, students, schools, repetitions)
+
+print('working on theoretical')
+(ranks_students_approx, average_oranks_students_approx,
+average_nash_welfare_students_approx) = apr.simulation_ranks(start,add, delta, students, schools)
+
+barWidth = 0.25
+
+for k in range(start, start + add + 1, 1):
+    ranks = np.array(rank_student_i[k])
+    ranks_approx = np.array(ranks_students_approx[k])
+    br2 = np.arange(1, len(ranks)+1)
+    br3 = [x + barWidth for x in br2]
+    plt.bar(br2, ranks, color = 'royalblue', label = 'SD', width=barWidth)
+    plt.bar(br3, ranks_approx, color = 'sandybrown', label = 'Theoretical', width=barWidth)
+    #plt.bar(ranks, hist = False, kde = True, label ='SD')
+    #sns.distplot(ranks_approx, hist = False, kde = True, label = 'Theoretical')
+    #plt.hist(ranks, color = 'royalblue', alpha=0.5, label='SD', density=True)
+    #plt.hist(ranks_approx, color = 'sandybrown', alpha=0.5, label='Theoretical', density = True)
+    plt.legend(loc='upper left')
+    plt.title('Expected Rank Student "i" Length of list '+str(k))
+    plt.xlabel('Student "i"')
+    plt.ylabel("Expected Rank")
+    plt.savefig(path+'expected_rank_student_i_'+str(k)+'.png')
+    plt.clf()
+
+for k in range(start, start + add + 1, 1):
+    ranks = np.array(ranks_students[k])
+    sns.distplot(ranks, hist = True, kde = True, label ='SD')
+    plt.legend(loc='upper right')
+    plt.title('Ranks Distribution')
+    plt.xlabel('Ranks')
+    plt.savefig(path+'hist_ranks_students_'+str(k)+'.png')
+    plt.clf()
+
+
+
+lists2 = sorted(average_nash_welfare_students.items()) 
+lists3 = sorted(average_nash_welfare_students_approx.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br2 = np.arange(1, len(x2)+1)
+br3 = [x + barWidth for x in br2]
+plt.bar(br2, y2, color = 'royalblue', label = 'SD', width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Theoretical', width=barWidth)
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Nash Social Welfare")
+plt.savefig(path+'average_nash_social_welfare_students.png')
+plt.clf()
+
+print(average_oranks_students)
+print(average_oranks_students_approx)
+lists2 = sorted(average_oranks_students.items()) 
+lists3 = sorted(average_oranks_students_approx.items()) 
+x2, y2 = zip(*lists2)
+x3, y3 = zip(*lists3)
+br2 = np.arange(1, len(x2)+1)
+br3 = [x + barWidth for x in br2]
+plt.bar(br2, y2, color = 'royalblue', label = 'SD', width=barWidth)
+plt.bar(br3, y3, color = 'sandybrown', label = 'Theoretical', width=barWidth)
+plt.title('Expected Rank Sublist Size')
+plt.xlabel("Lenght of student's sub-list")
+plt.ylabel("Average ranks")
+plt.legend(loc="upper right")
+plt.savefig(path+'average_oranks.png')
+plt.clf()
+
+print(rank_student_i)
+print(ranks_students_approx)
 
 print('code succesfull')
