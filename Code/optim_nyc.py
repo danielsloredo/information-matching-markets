@@ -4,6 +4,10 @@ import numpy as np
 import random as ra
 import time
 
+###################################################################
+#Market instance creation
+###################################################################
+
 def marriage_market_preference_lists(n_students, n_schools):
     '''
     Function that generates a random bipartite matching market instance between students and 
@@ -99,6 +103,10 @@ def increase_preference_sublist(delta, student_preferences, school_preferences, 
     #print("School list time --- %s seconds ---" % (school_list_time))    
     return student_preferences_2, school_preferences_2
 
+#####################################################################################
+#Gale-Shapley
+#
+#####################################################################################
 
 def gale_shapley_modified(n_students, n_schools, student_preferences, school_preferences):
     '''
@@ -1665,3 +1673,118 @@ def mc_simulations_utility_sd(Delta, sublist, additions, n_students, n_schools, 
     average_miscelaneous_1_utility, average_miscelaneous_2_utility,
     average_miscelaneous_3_utility, average_exponential_utility,
     average_s_shape_utility)
+
+#####################################################################
+# Serial Dictatorship Only Students
+# P(A_{i-1}^d intersection A_{i-1}^{d-1})
+# Only students preferences are needed
+#####################################################################
+
+def marriage_market_preference_lists_students_only(n_students, n_schools):
+    '''
+    Function that generates a random bipartite matching market instance between students and 
+    schools with complete preference lists on the opposite side
+    Inputs: 
+        -n_students: number of students in the market
+        -n_schools: number of schools in the market
+    Outputs: 
+        -student_full_preferences: dictionary with list of preferences for each one of the students
+    '''
+
+    students = [i for i in range(n_students)]
+    schools = [i for i in range(n_schools)]
+
+    student_full_preferences = {}
+
+    for student in students: 
+        prefs = np.random.choice(schools, n_schools, replace=False)
+        student_full_preferences[student] = np.array([(i, prefs[i]) for i in range(n_schools)])
+
+    return student_full_preferences
+
+def restricted_market_students_only(d_student, student_full_preferences):
+    '''
+    Function that samples a sublist of preferences from the full preference lists of agents in the 
+    random matching market.
+    Inputs: 
+        -d_student: lenght of preferences on students sub-list
+        -student_full_preferences: Dictionary with list of preferences for each one of the students in the market
+    Output: 
+        -student_preferences: dictionary with preference sublists for students in the market
+    '''
+
+    student_preferences = {}
+    
+    for student, s_prefs in student_full_preferences.items():
+        s_prefs_restricted = s_prefs[np.random.choice(s_prefs.shape[0], d_student, replace=False), :]
+        student_preferences[student] = s_prefs_restricted[s_prefs_restricted[:,0].argsort()]
+        
+    return student_preferences
+
+
+def increase_preference_sublist_students_only(delta, student_preferences, student_full_preferences):
+    '''
+    Function that increases the previously sampled sublist of preferences. 
+    '''
+    student_preferences_2 = {}
+    
+    for student, prefs in student_preferences.items():
+        student_full_prefs = student_full_preferences[student]
+        student_full_prefs_rows = student_full_prefs.view([('', student_full_prefs.dtype)] * student_full_prefs.shape[1])
+        prefs_rows = prefs.view([('', prefs.dtype)] * prefs.shape[1])
+        potential_additions = np.setdiff1d(student_full_prefs_rows, prefs_rows).view(student_full_prefs.dtype).reshape(-1, student_full_prefs.shape[1])
+        schools_to_add = potential_additions[np.random.choice(potential_additions.shape[0], delta, replace=False), :]
+        s_prefs_restricted = np.concatenate((prefs, schools_to_add), axis = 0)
+        student_preferences_2[student] = s_prefs_restricted[s_prefs_restricted[:,0].argsort()]
+        
+    return student_preferences_2
+
+def serial_dictatorship_students_only(n_students, n_schools, order_selection, student_preferences):
+    
+    unmatched_schools = list(range(n_schools))
+
+    student_match = np.full((n_students, 2), -9999, dtype=int)
+
+    next_student_choice = [0] * n_students
+
+    for student in order_selection:
+        student_prefs = student_preferences[student]
+        matched = 0
+        while matched == 0 and next_student_choice[student] < student_prefs.shape[0]:
+            school_rank = student_prefs[next_student_choice[student]]
+            sch = school_rank[1]
+            if sch in unmatched_schools: 
+                student_match[student] = school_rank
+                unmatched_schools.remove(sch)
+                matched = 1
+            
+            else:
+                next_student_choice[student] += 1            
+    
+    return student_match
+
+def simulation_matching_increase_preferences_sd_students_only(Delta, k, n_students, n_schools, additions):
+    '''
+    Simulates the matching outcome under diferent preference list sizes where we only add new preferences
+    by using the serial dictatorship algorithm.
+    '''
+    student_f_pref = marriage_market_preference_lists_students_only(n_students, n_schools)
+    student_order_selection = [i for i in range(n_students)]
+
+    student_pre = {}
+    student_M = {}
+    
+    student_pre[k] = restricted_market_students_only(k, student_f_pref)
+    student_M[k] = serial_dictatorship_students_only(n_students, n_schools, student_order_selection, student_pre[k])
+    
+    for j in range(1,additions+1):
+        k_prev = k
+        k = k + Delta
+        #print('working on sublist size: ' + str(k))
+        student_pre[k] = increase_preference_sublist_students_only(Delta, student_pre[k_prev], student_f_pref)
+        student_M[k] = serial_dictatorship_students_only(n_students, n_schools, student_order_selection, student_pre[k])
+        
+    return student_M, student_f_pref, student_order_selection
+
+
+
