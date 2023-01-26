@@ -1788,3 +1788,31 @@ def simulation_matching_increase_preferences_sd_students_only(Delta, k, n_studen
 
 
 
+def event_intersection_probability(Delta, sublist, additions, n_students, n_schools, iterations):
+    '''
+    Function to simulate the behaviour of different utility functions on the stable match
+    outcome with different sublist sizes.
+    '''
+    T_occurrence = []
+    
+
+    for i in range(iterations):
+        print('Working on iteration: ' + str(i))
+        event = []
+
+        student_Match, student_original_preferences, student_order = simulation_matching_increase_preferences_sd_students_only(Delta, sublist, n_students, n_schools, additions)
+
+        for sub_list, matching in student_Match.items():
+            if matching[matching[:,1] != -9999]:
+                event.append(1)
+            else:
+                event.append(1)
+        
+        if np.sum(event) == 2:
+            T_occurrence.append(1)
+        else:
+            T_occurrence.append(0)
+        
+    probability = np.sum(T_occurrence)/len(T_occurrence)
+
+    return (probability, T_occurrence)
