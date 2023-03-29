@@ -1969,6 +1969,7 @@ def mc_simulations_utility_sd_students_only(Delta, sublist, additions, n_student
     average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
     ranks_students = {x : [] for x in range(sublist, end, Delta)}
     rank_student_i = {x : np.zeros(n_students) for x in range(sublist, end, Delta)}
+    rank_student_i_diff = {x : np.zeros(n_students) for x in range(sublist-1, end, Delta)}
     r_profile = {x : np.zeros(n_schools+1) for x in range(sublist, end, Delta)}
 
 
@@ -1996,6 +1997,9 @@ def mc_simulations_utility_sd_students_only(Delta, sublist, additions, n_student
             ranks_students[size].extend(ary)
             #reorder_ary = np.array(reorder(ary,student_order,n_students))
             rank_student_i[size] = rank_student_i[size] + ary/iterations
+
+        for size, ary in or_students.items():
+            rank_student_i_diff[size] += (ary-or_students[size-1])/iterations
         
         for size, rk_profile in ranks_profile.items():
             r_profile[size] = r_profile[size] + rk_profile/iterations  
@@ -2030,7 +2034,7 @@ def mc_simulations_utility_sd_students_only(Delta, sublist, additions, n_student
 
     return (average_nash_welfare_students, 
     average_oranks_students,
-    ranks_students, rank_student_i, 
+    ranks_students, rank_student_i, rank_student_i_diff,
     r_profile, 
     average_leontief_utility, average_cobb_stone_utility, 
     average_qlinear_power_utility, average_qlinear_square_utility, 
