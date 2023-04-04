@@ -2031,25 +2031,23 @@ plt.savefig(path+'5_100/probability_event2.png')
 plt.clf()
 '''
 
-
+'''
 ####################################################################################
-# Serial Dictatorship
+# Serial Dictatorship for change in rank of i
 ####################################################################################
-from fitter import Fitter, get_common_distributions, get_distributions
-import pickle
 
 delta = 1 
-start = 1
-add = 99
-students = 100
-schools = 100
-repetitions = 100
+start = 99
+add = 1
+students = 1000
+schools = 1000
+repetitions = 10
 
-path = 'D:/Documents/CDO/CDO_project/Figures_sd/students_100_100/'
+path = 'D:/Documents/CDO/CDO_project/Figures_sd/students_temp_1000_1000/'
 
-(average_nash_welfare_students,  
-average_oranks_students, 
-ranks_students, rank_studenti, rank_studenti_diff, 
+(average_nash_welfare_students, 
+average_oranks_students,
+ranks_students, rank_studenti, rank_studenti_diff,
 r_profile,
 average_leontief_u, average_cobb_stone_u, 
 average_qlinear_power_u, average_qlinear_square_u, 
@@ -2059,115 +2057,66 @@ average_s_shape_u) = onyc.mc_simulations_utility_sd_students_only(delta, start, 
 
 barWidth = 0.25
 
-for interval_start in range(start, start+add, 1):
+for interval_start in range(start, start+add+1, 1):
     r_array = rank_studenti_diff[interval_start] 
     indexes = np.arange(students)
-    plt.figure(102)
     plt.bar(indexes, r_array, color = 'royalblue',  width=barWidth)
-    plt.title('Diference of expected rank per student')
+    plt.title('Diference of expected rank per student size of list '+str(interval_start))
     plt.xlabel('Student i')
     plt.ylabel('Difference')
     plt.savefig(path+'diff_rank_student_'+str(interval_start)+'.png')
     plt.clf()
 
-
-for interval_start in range(start, start+add, 10):
-    for k in range(interval_start, interval_start + 10, 1):
-        if k < start+add:
-            ranks = np.array(ranks_students[k])
-            sns.distplot(ranks, hist = False, kde = True,
-                        label = k)
+for interval_start in range(start, start+add+1):
+    ranks = np.array(ranks_students[interval_start])
+    sns.distplot(ranks, hist = True, kde = False,
+                 label = interval_start)
     plt.legend(title = 'Sub-list')
-    plt.title('Density Plot for Ranks')
-    plt.xlabel('Ranks')
-    plt.ylabel('Density')
-    plt.savefig(path+'density_ranks_students_'+str(interval_start)+'.png')
-    plt.clf()
-
-for interval_start in range(start, start+add, 10):
-    if interval_start < start+add:
-        ranks = np.array(ranks_students[interval_start])
-        sns.distplot(ranks, hist = True, kde = True,
-                        label = k)
-    plt.legend(title = 'Sub-list')
-    plt.title('Histogram for Ranks')
+    plt.title('Histogram for Ranks lists of length ' + str(interval_start))
     plt.xlabel('Ranks')
     plt.savefig(path+'hist_ranks_students_'+str(interval_start)+'.png')
     plt.clf()
 
-lists2 = sorted(average_leontief_u.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(101)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("u(M)")
-plt.savefig(path+'average_leontief_utility.png')
-
-lists2 = sorted(average_exponential_u.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(102)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("u(M)")
-plt.savefig(path+'average_exponential_utility.png')
-
-barWidth = 0.25
-lists2 = sorted(average_s_shape_u.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(120)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("u(M)")
-plt.savefig(path+'average_s_shape_utility.png')
-
-lists2 = sorted(average_qlinear_power_u.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(103)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("u(M)")
-plt.savefig(path+'average_qlinear_power_utility.png')
-
-lists2 = sorted(average_qlinear_square_u.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(104)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("u(M)")
-plt.savefig(path+'average_qlinear_square_utility.png')
-
-lists2 = sorted(average_miscelaneous_1_u.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(105)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("u(M)")
-plt.savefig(path+'average_miscelaneous_1_utility.png')
-
-lists2 = sorted(average_miscelaneous_3_u.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(106)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("u(M)")
-plt.savefig(path+'average_miscelaneous_3_utility.png')
-
-lists2 = sorted(average_nash_welfare_students.items()) 
-x2, y2 = zip(*lists2)
-plt.figure(107)
-plt.bar(x2, y2, color = 'royalblue',  width=barWidth)
-plt.xlabel("Lenght of student's sub-list")
-plt.ylabel("Nash Social Welfare")
-plt.savefig(path+'average_nash_social_welfare_students.png')
-
 lists2 = sorted(average_oranks_students.items()) 
 x2, y2 = zip(*lists2)
 br2 = np.arange(len(x2))
-plt.figure(108)
 plt.bar(br2, y2, color = 'royalblue', label = 'Students', width=barWidth)
 plt.xlabel("Lenght of student's sub-list")
 plt.ylabel("Average ranks")
 plt.legend(loc="upper right")
 plt.savefig(path+'average_oranks.png')
+plt.clf()
+
+'''
+###############################################################################################
+## Overlaps between students lists experiments
+###############################################################################################
+n_schools = 1_000
+n_students = 1_000
+sublists = [9, 10, 49, 50, 99, 100, 101]
+reps = 2_5
+
+path = 'D:/Documents/CDO/CDO_project/Figures_sd/overlaps/'
+
+free_sch, schools_taken = onyc.overlaps_student_i(sublists, n_students, n_schools, reps)
+exp_difference = onyc.difference_expected_rank(free_sch, sublists, n_students, n_schools)
+
+for dix in range(len(sublists)):
+    plt.plot(free_sch[dix,:])
+    
+plt.legend(title = 'Sub-list')
+plt.savefig(path+'free_schools_1000_1000_sublist'+str(dix)+'.png')
+plt.clf()
+
+for dix in range(len(sublists)):
+    plt.plot(schools_taken[dix,:])
+plt.savefig(path+'schools_taken_1000_1000_sublist'+str(dix)+'.png')
+plt.clf()
+
+for dix in range(len(sublists)-1):
+    plt.plot(exp_difference[dix, :])
+plt.savefig(path+'exp_difference_1000_1000_sublist'+str(dix)+'.png')
+plt.clf()
+
 
 print('code succesfull')
