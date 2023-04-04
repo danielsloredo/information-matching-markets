@@ -2193,11 +2193,11 @@ def experiments_sd_event_matched(Delta, sublist, additions, stu_sizes, n_schools
 ############################################################################################################################################
 ############################################################################################################################################
 
-def overlaps_student_i(sublist, n_students, n_schools, reps):
+def overlaps_student_i(sublists, n_students, n_schools, reps):
 
-    overlap_sizes = np.zeros((len(sublist),n_students,reps))
-    schools_taken_m = np.zeros((len(sublist),n_students,reps))
-    for dix, d in enumerate(sublist):
+    overlap_sizes = np.zeros((len(sublists),n_students,reps))
+    schools_taken_m = np.zeros((len(sublists),n_students,reps))
+    for dix, d in enumerate(sublists):
         for rep in tqdm(range(reps)):
             schools_taken = 0
             for i in range(n_students):
@@ -2215,4 +2215,13 @@ def overlaps_student_i(sublist, n_students, n_schools, reps):
                 overlap_sizes[dix,i,rep] = drawn_untaken
                 schools_taken_m[dix,i,rep] = schools_taken
                 
-    return overlap_sizes, schools_taken
+    return np.mean(overlap_sizes, axis = 2), np.mean(schools_taken, axis = 2)
+
+def difference_expected_rank(mean_overlap_sizes, sublists, n_students):
+
+    expected_difference = np.zeros((len(sublists)-1, n_students))
+
+    for sublist in range(len(sublists)-1):
+        expected_difference[sublist, :] = mean_overlap_sizes[sublist+1, :] - mean_overlap_sizes[sublist, :]
+
+    return expected_difference
