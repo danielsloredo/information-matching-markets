@@ -2229,4 +2229,4 @@ def difference_expected_rank(mean_free_schools, sublists, n_students, n_schools)
     for d in range(len(sublists)-1):
         expected_difference[d, :] = expected_value[d+1, :] - expected_value[d, :]
 
-    return expected_difference
+    return expected_difference, expected_value
