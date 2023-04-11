@@ -2031,31 +2031,42 @@ plt.savefig(path+'5_100/probability_event2.png')
 plt.clf()
 '''
 
-'''
+
 ####################################################################################
 # Serial Dictatorship for change in rank of i
 ####################################################################################
 
 delta = 1 
-start = 99
+start = 9
 add = 1
 students = 1000
 schools = 1000
-repetitions = 10
+repetitions = 1000
 
-path = 'D:/Documents/CDO/CDO_project/Figures_sd/students_temp_1000_1000/'
+path = 'D:/Documents/CDO/CDO_project/Figures_sd/last_student_1000_1000/'
 
 (average_nash_welfare_students, 
 average_oranks_students,
-ranks_students, rank_studenti, rank_studenti_diff,
-r_profile,
-average_leontief_u, average_cobb_stone_u, 
-average_qlinear_power_u, average_qlinear_square_u, 
-average_miscelaneous_1_u, average_miscelaneous_2_u,
-average_miscelaneous_3_u, average_exponential_u,
-average_s_shape_u) = onyc.mc_simulations_utility_sd_students_only(delta, start, add, students, schools, repetitions)
+ranks_students, rank_studenti, rank_studenti_diff, rank_std_last, rank_std_last_diff,
+r_profile) = onyc.mc_simulations_utility_sd_students_only(delta, start, add, students, schools, repetitions)
 
 barWidth = 0.25
+
+colr = ['royalblue','sandybrown']
+ranks = rank_std_last[start]
+sns.histplot(ranks, color=colr[0], label = str(start), alpha=.4)    
+ranks2 = rank_std_last[start+1]
+sns.histplot(ranks2, color=colr[1], label = str(start+1), alpha=.4)
+plt.title('Last student Rank of Partner Distribution')
+plt.xlabel('Ranks')
+plt.savefig(path+'hist_ranks_last_student.png')
+plt.clf()
+
+sns.histplot(rank_std_last_diff)
+plt.title('Last student Expected Change on Rank of Partner Distribution')
+plt.xlabel('Change')
+plt.savefig(path+'hist_change_last_student_.png')
+plt.clf()
 
 for interval_start in range(start, start+add+1, 1):
     r_array = rank_studenti_diff[interval_start] 
@@ -2091,32 +2102,68 @@ plt.clf()
 ###############################################################################################
 ## Overlaps between students lists experiments
 ###############################################################################################
-n_schools = 1_000
-n_students = 1_000
-sublists = [9, 10, 49, 50, 99, 100, 101]
-reps = 2_5
+n_students = 100_000
+n_schools = 100_000
 
-path = 'D:/Documents/CDO/CDO_project/Figures_sd/overlaps/'
+sublists = [9, 10]
+reps = 1_000
+
+path = 'D:/Documents/CDO/CDO_project/Figures_sd/overlaps_100000/'
 
 free_sch, schools_taken = onyc.overlaps_student_i(sublists, n_students, n_schools, reps)
-exp_difference = onyc.difference_expected_rank(free_sch, sublists, n_students, n_schools)
+m_free_sch = np.mean(free_sch, axis = 2)
+m_schools_taken = np.mean(schools_taken, axis = 2)
+exp_difference, exp_value = onyc.difference_expected_rank(m_free_sch, sublists, n_students, n_schools)
+mov_average_difference_window_5 = onyc.moving_average(exp_difference, sublists, n_students,5)
+mov_average_difference_window_10 = onyc.moving_average(exp_difference, sublists, n_students,10)
+exp_difference_last_std, exp_value_last_std = onyc.last_student(free_sch, sublists, n_students, n_schools, reps)
 
-for dix in range(len(sublists)):
-    plt.plot(free_sch[dix,:])
-    
-plt.legend(title = 'Sub-list')
-plt.savefig(path+'free_schools_1000_1000_sublist'+str(dix)+'.png')
+for dix, size in enumerate(sublists):
+    plt.plot(m_free_sch[dix,:])
+    if dix % 2 != 0:
+        plt.savefig(path+'free_schools_'+str(n_students)+'_sublist'+str(size)+'.png')
+        plt.clf()
+
+for dix, size in enumerate(sublists):
+    plt.plot(m_schools_taken[dix,:])
+    if dix % 2 != 0:
+        plt.savefig(path+'schools_taken_'+str(n_students)+'_sublist'+str(size)+'.png')
+        plt.clf()
+
+for dix, size in enumerate(sublists[1:]):
+    if dix % 2 == 0:
+        plt.plot(exp_difference[dix, :])
+        plt.savefig(path+'exp_difference_'+str(n_students)+'_sublist'+str(size)+'.png')
+        plt.clf()
+
+for dix, size in enumerate(sublists[1:]):
+    if dix % 2 == 0:
+        plt.plot(mov_average_difference_window_5[dix, :])
+        plt.savefig(path+'mov_average_difference_'+str(n_students)+'_sublist'+str(size)+'_window_5.png')
+        plt.clf()
+
+for dix, size in enumerate(sublists[1:]):
+    if dix % 2 == 0:
+        plt.plot(mov_average_difference_window_10[dix, :])
+        plt.savefig(path+'mov_average_difference_'+str(n_students)+'_sublist'+str(size)+'_window_10.png')
+        plt.clf()
+
+colr = ['royalblue','sandybrown']
+for dix, size in enumerate(sublists):
+    ranks = np.array(exp_value_last_std[dix])
+    sns.histplot(ranks, color=colr[dix], label = str(size), alpha=.4)
+plt.title('Last student Rank of Partner Distribution')
+plt.xlabel('Ranks')
+plt.savefig(path+'hist_ranks_last_student.png')
 plt.clf()
 
-for dix in range(len(sublists)):
-    plt.plot(schools_taken[dix,:])
-plt.savefig(path+'schools_taken_1000_1000_sublist'+str(dix)+'.png')
-plt.clf()
-
-for dix in range(len(sublists)-1):
-    plt.plot(exp_difference[dix, :])
-plt.savefig(path+'exp_difference_1000_1000_sublist'+str(dix)+'.png')
-plt.clf()
-
+for dix, size in enumerate(sublists[1:]):
+    diffs = np.array(exp_difference_last_std[dix])
+    sns.histplot(diffs)
+    plt.title('Last student Expected Change on Rank of Partner Distribution')
+    plt.xlabel('Change')
+    plt.savefig(path+'hist_change_last_student_'+str(size)+'.png')
+    plt.clf()
+'''
 
 print('code succesfull')
