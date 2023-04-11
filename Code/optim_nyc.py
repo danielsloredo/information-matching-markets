@@ -2059,21 +2059,13 @@ def mc_simulations_utility_sd_students_only(Delta, sublist, additions, n_student
     
     average_nash_welfare_students = {x : 0 for x in range(sublist, end, Delta)}
 
-    average_leontief_utility = {x : 0 for x in range(sublist, end, Delta)} 
-    average_cobb_stone_utility = {x : 0 for x in range(sublist, end, Delta)}
-    average_qlinear_power_utility = {x : 0 for x in range(sublist, end, Delta)}
-    average_qlinear_square_utility = {x : 0 for x in range(sublist, end, Delta)}
-    average_miscelaneous_1_utility = {x : 0 for x in range(sublist, end, Delta)}
-    average_miscelaneous_2_utility = {x : 0 for x in range(sublist, end, Delta)}
-    average_miscelaneous_3_utility = {x : 0 for x in range(sublist, end, Delta)}
-    average_exponential_utility = {x : 0 for x in range(sublist, end, Delta)}
-    average_s_shape_utility = {x : 0 for x in range(sublist, end, Delta)}
-    
 
     average_oranks_students = {x : 0 for x in range(sublist, end, Delta)}
     ranks_students = {x : [] for x in range(sublist, end, Delta)}
     rank_student_i = {x : np.zeros(n_students) for x in range(sublist, end, Delta)}
     rank_student_i_diff = {x : np.zeros(n_students) for x in range(sublist-1, end, Delta)}
+    rank_student_last = {x : np.zeros(iterations) for x in range(sublist, end, Delta)}
+    rank_student_last_diff = np.zeros(iterations)
     r_profile = {x : np.zeros(n_schools+1) for x in range(sublist, end, Delta)}
 
 
@@ -2085,14 +2077,14 @@ def mc_simulations_utility_sd_students_only(Delta, sublist, additions, n_student
         #nash_welfare_students = nash_welfare_students_only(student_Match, n_schools)
         mean_original_ranks_students, or_students = average_rank_match_students_only(student_Match, n_schools)
         ranks_profile = rank_profile_students_only(student_Match, n_schools)
-        #(leontief_u, cobb_stone_u, qlinear_power_u, qlinear_square_u, 
-        #miscelaneous_1_u, miscelaneous_2_u, miscelaneous_3_u,
-        #exponential_u, s_shape_u) = utility_functions_students_only(student_Match, n_schools, ranks_profile)
-
 
         #Students
         #for size, value in nash_welfare_students.items():
         #    average_nash_welfare_students[size] += value/iterations
+        
+        rank_student_last[sublist+1][i] = or_students[sublist+1][n_students-1]
+        rank_student_last[sublist][i] = or_students[sublist][n_students-1]
+        rank_student_last_diff[i] = or_students[sublist+1][n_students-1] - or_students[sublist][n_students-1]
 
         for size, value in mean_original_ranks_students.items():
             average_oranks_students[size] += value/iterations 
@@ -2105,49 +2097,17 @@ def mc_simulations_utility_sd_students_only(Delta, sublist, additions, n_student
         prev_ary = np.array(rank_student_i_diff[sublist-1])
         for size, ary in or_students.items():
             ary2 = np.array(ary)
-            rank_student_i_diff[size] += (prev_ary - ary2)/iterations
+            rank_student_i_diff[size] += (ary2 - prev_ary)/iterations
             prev_ary = np.copy(ary)
         
         for size, rk_profile in ranks_profile.items():
             r_profile[size] = r_profile[size] + rk_profile/iterations  
         
-        #for size, value in leontief_u.items():
-        #    average_leontief_utility[size] += value/iterations
-
-        #for size, value in cobb_stone_u.items():
-        #    average_cobb_stone_utility[size] += value/iterations
-
-        #for size, value in qlinear_power_u.items():
-        #    average_qlinear_power_utility[size] += value/iterations
-
-        #for size, value in qlinear_square_u.items():
-        #    average_qlinear_square_utility[size] += value/iterations
-
-        #for size, value in miscelaneous_1_u.items():
-        #    average_miscelaneous_1_utility[size] += value/iterations
-        
-        #for size, value in miscelaneous_2_u.items():
-        #    average_miscelaneous_2_utility[size] += value/iterations
-
-        #for size, value in miscelaneous_3_u.items():
-        #    average_miscelaneous_3_utility[size] += value/iterations
-        
-        #for size, value in exponential_u.items():
-        #    average_exponential_utility[size] += value/iterations
-
-        #for size, value in s_shape_u.items():
-        #    average_s_shape_utility[size] += value/iterations 
-
 
     return (average_nash_welfare_students, 
     average_oranks_students,
-    ranks_students, rank_student_i, rank_student_i_diff,
-    r_profile, 
-    average_leontief_utility, average_cobb_stone_utility, 
-    average_qlinear_power_utility, average_qlinear_square_utility, 
-    average_miscelaneous_1_utility, average_miscelaneous_2_utility,
-    average_miscelaneous_3_utility, average_exponential_utility,
-    average_s_shape_utility)
+    ranks_students, rank_student_i, rank_student_i_diff, rank_student_last, rank_student_last_diff,
+    r_profile)
 
 def event_intersection_probability(Delta, sublist, additions, n_students, n_schools, iterations):
     '''
@@ -2215,7 +2175,7 @@ def overlaps_student_i(sublists, n_students, n_schools, reps):
                 free_schools[dix,i,rep] = drawn_untaken
                 schools_taken_m[dix,i,rep] = schools_taken
                 
-    return np.mean(free_schools, axis = 2), np.mean(schools_taken_m, axis = 2)
+    return free_schools, schools_taken_m
 
 def difference_expected_rank(mean_free_schools, sublists, n_students, n_schools):
 
@@ -2225,6 +2185,33 @@ def difference_expected_rank(mean_free_schools, sublists, n_students, n_schools)
     for j in range(len(sublists)):
         for i in range(n_students):
             expected_value[j,i] = (n_schools + 1)/(mean_free_schools[j, i]+1)
+        
+    for d in range(len(sublists)-1):
+        expected_difference[d, :] = expected_value[d+1, :] - expected_value[d, :]
+
+    return expected_difference, expected_value
+
+def moving_average(v, sublists, n_students, window_size):
+    mov_average_difference = np.zeros((len(sublists)-1, n_students-window_size+1))
+    for d in range(len(sublists)-1):
+        i = 0
+        moving_averages = []
+        while i < n_students - window_size + 1:
+            window = v[d, i : i + window_size]
+            window_average = np.sum(window) / window_size
+            moving_averages.append(window_average)	
+            i += 1
+        mov_average_difference[d, :] = moving_averages
+    return mov_average_difference
+
+def last_student(free_schools, sublists, n_students, n_schools, reps):
+    last_student_free_schools = free_schools[:,n_students-1,:]
+    
+    expected_difference = np.zeros((len(sublists)-1, reps))
+    expected_value = np.zeros((len(sublists), reps))
+
+    for j in range(len(sublists)):
+        expected_value[j, :] = (n_schools + 1)/(last_student_free_schools[j, :]+1)
         
     for d in range(len(sublists)-1):
         expected_difference[d, :] = expected_value[d+1, :] - expected_value[d, :]
