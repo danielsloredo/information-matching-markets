@@ -2030,7 +2030,7 @@ plt.ylabel("Probability of event T")
 plt.savefig(path+'5_100/probability_event2.png')
 plt.clf()
 '''
-
+'''
 
 ####################################################################################
 # Serial Dictatorship for change in rank of i
@@ -2102,11 +2102,11 @@ plt.clf()
 ###############################################################################################
 ## Overlaps between students lists experiments
 ###############################################################################################
-n_students = 100_000
-n_schools = 100_000
+n_students = 1_000
+n_schools = 1_000
 
 sublists = [9, 10]
-reps = 1_000
+reps = 5000
 
 path = 'D:/Documents/CDO/CDO_project/Figures_sd/overlaps_100000/'
 
@@ -2118,6 +2118,55 @@ mov_average_difference_window_5 = onyc.moving_average(exp_difference, sublists, 
 mov_average_difference_window_10 = onyc.moving_average(exp_difference, sublists, n_students,10)
 exp_difference_last_std, exp_value_last_std = onyc.last_student(free_sch, sublists, n_students, n_schools, reps)
 
+print('For size 1000')
+print(np.sum(exp_difference_last_std[0,:]<0)/reps)
+print(np.sum(exp_difference_last_std[0,:]==0)/reps)
+print(np.sum(exp_difference_last_std[0,:]>0)/reps)
+
+n_students = 10_000
+n_schools = 10_000
+
+sublists = [9, 10]
+reps = 5000
+
+path = 'D:/Documents/CDO/CDO_project/Figures_sd/overlaps_100000/'
+
+free_sch, schools_taken = onyc.overlaps_student_i(sublists, n_students, n_schools, reps)
+m_free_sch = np.mean(free_sch, axis = 2)
+m_schools_taken = np.mean(schools_taken, axis = 2)
+exp_difference, exp_value = onyc.difference_expected_rank(m_free_sch, sublists, n_students, n_schools)
+mov_average_difference_window_5 = onyc.moving_average(exp_difference, sublists, n_students,5)
+mov_average_difference_window_10 = onyc.moving_average(exp_difference, sublists, n_students,10)
+exp_difference_last_std, exp_value_last_std = onyc.last_student(free_sch, sublists, n_students, n_schools, reps)
+
+print('For size 10000')
+print(np.sum(exp_difference_last_std[0,:]<0)/reps)
+print(np.sum(exp_difference_last_std[0,:]==0)/reps)
+print(np.sum(exp_difference_last_std[0,:]>0)/reps)
+
+n_students = 100_000
+n_schools = 100_000
+
+sublists = [9, 10]
+reps = 5000
+
+path = 'D:/Documents/CDO/CDO_project/Figures_sd/overlaps_100000/'
+
+free_sch, schools_taken = onyc.overlaps_student_i(sublists, n_students, n_schools, reps)
+m_free_sch = np.mean(free_sch, axis = 2)
+m_schools_taken = np.mean(schools_taken, axis = 2)
+exp_difference, exp_value = onyc.difference_expected_rank(m_free_sch, sublists, n_students, n_schools)
+mov_average_difference_window_5 = onyc.moving_average(exp_difference, sublists, n_students,5)
+mov_average_difference_window_10 = onyc.moving_average(exp_difference, sublists, n_students,10)
+exp_difference_last_std, exp_value_last_std = onyc.last_student(free_sch, sublists, n_students, n_schools, reps)
+
+print('For size 100000')
+print(np.sum(exp_difference_last_std[0,:]<0)/reps)
+print(np.sum(exp_difference_last_std[0,:]==0)/reps)
+print(np.sum(exp_difference_last_std[0,:]>0)/reps)
+
+
+'''
 for dix, size in enumerate(sublists):
     plt.plot(m_free_sch[dix,:])
     if dix % 2 != 0:
@@ -2164,6 +2213,7 @@ for dix, size in enumerate(sublists[1:]):
     plt.xlabel('Change')
     plt.savefig(path+'hist_change_last_student_'+str(size)+'.png')
     plt.clf()
+
 '''
 
 print('code succesfull')
